@@ -12,7 +12,7 @@
 	}
 	$allowupdate = array(8,9);
 	
-	
+	mysqli_query($con,"SET NAMES UTF8");
 	
 	$thisid = $_GET['id'];
 	
@@ -35,7 +35,7 @@
 			$real=$sale;
 		}
 		
-		mysqli_query($con,"SET NAMES UTF8");
+		
 		$sql = "UPDATE product SET instock=instock+'$addstock', price=$price, sale=$sale, currentprice=$real, information='$info' WHERE id=$thisid";
 		$qry = mysqli_query($con, $sql);
 		

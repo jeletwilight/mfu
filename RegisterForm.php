@@ -129,9 +129,9 @@
 		</table>
 		<table>
 			<tr>
-				<td width="100"><input type="submit" name="submit" /></td>
-				<td width="100"><input type="reset"></td>
-				<td width="100"><button type="button" onclick="location.href='/mfu/index.php';">Back</button></td>
+				<td width="100" align="center"><input type="submit" name="submit" /></td>
+				<td width="100" align="center"><input type="reset"></td>
+				<td width="100" align="center"><button type="button" onclick="location.href='/mfu/index.php';">Back</button></td>
 				<!------------------------------------  WAITING FOR LINK ^^^^ ----------------------->
 			</tr>
 			</form>

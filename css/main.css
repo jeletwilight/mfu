@@ -572,6 +572,12 @@ iframe {
   padding: 10px;
 }
 
+.topbar-img-item {
+	height: 40px;
+	width: 40px;
+	padding: 5px;
+}
+
 /* ------------------------------------ */
 .topbar-email,
 .topbar-child1 {
@@ -816,6 +822,7 @@ li.sale-noti > a {
   right: -10px;
   padding: 20px;
   border-top: 3px solid #e6e6e6;
+  border-radius: 15px;
   background-color: white;
 
   box-shadow: 0 3px 5px 0px rgba(0, 0, 0, 0.1);
@@ -866,6 +873,41 @@ li.sale-noti > a {
   padding-top: 5px;
 }
 
+/* ------------- MY HEADER ------------ */
+
+.myheader-login {
+  position: absolute;
+  z-index: 1100;
+  width: 300px;
+  top: 190%;
+  right: -10px;
+  padding: 20px;
+  border-top: 3px solid #e6e6e6;
+  background-color: white;
+
+  box-shadow: 0 3px 5px 0px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 3px 5px 0px rgba(0, 0, 0, 0.1);
+  -webkit-box-shadow: 0 3px 5px 0px rgba(0, 0, 0, 0.1);
+  -o-box-shadow: 0 3px 5px 0px rgba(0, 0, 0, 0.1);
+  -ms-box-shadow: 0 3px 5px 0px rgba(0, 0, 0, 0.1);
+  
+  transition: all 0.3s;
+  -webkit-transition: all 0.3s;
+  -o-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  
+  transform-origin: top right;
+  -webkit-transform: scale(0);
+  -moz-transform: scale(0);
+  -ms-transform: scale(0);
+  -o-transform: scale(0);
+  transform: scale(0);
+}
+
+.fixed-myheader .myheader-login {
+  top: 160%;
+}
+
 /* ------------------------------------ */
 .header-cart-item-img {
   width: 80px;
@@ -875,6 +917,7 @@ li.sale-noti > a {
 
 .header-cart-item-img img {
   width: 100%;
+  /*height: 100%;*/
 }
 
 .header-cart-item-img::after {
@@ -900,6 +943,7 @@ li.sale-noti > a {
   -o-transition: all 0.3s;
   -moz-transition: all 0.3s;
   opacity: 0;
+  border-radius: 8px;
 }
 
 .header-cart-item-img:hover:after {
@@ -910,6 +954,15 @@ li.sale-noti > a {
 /* ------------------------------------ */
 .header-cart-item-txt {
   width: calc(100% - 100px);
+}
+
+.header-cart-item-mytxt {
+  width: 100%;
+}
+
+.header-cart-item-mybtn {
+  width: calc(100% - 80px);
+  text-align: center;
 }
 
 .header-cart-item-name {
@@ -983,7 +1036,7 @@ li.sale-noti > a {
 }
 
 .logo-mobile img {
-  max-height: 27px;
+  max-height: 80px;
 }
 
 /*[ btn show menu ]
@@ -1673,6 +1726,7 @@ li.sale-noti > a {
 /* ------------------------------------ */
 .block2-overlay {
   position: absolute;
+  border-radius: 20px;
   width: 100%;
   height: 100%;
   top: 0;
@@ -1683,6 +1737,39 @@ li.sale-noti > a {
 
 /* ------------------------------------ */
 .block2-btn-addcart {
+  position: absolute;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+  -moz-transform: translateX(-50%);
+  -ms-transform: translateX(-50%);
+  -o-transform: translateX(-50%);
+  transform: translateX(-50%);
+  bottom: -45px;
+}
+
+.block2-btn-viewdetail {
+  position: absolute;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+  -moz-transform: translateX(-50%);
+  -ms-transform: translateX(-50%);
+  -o-transform: translateX(-50%);
+  transform: translateX(-50%);
+  bottom: -45px;
+}
+
+.block2-btn-edit {
+  position: absolute;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+  -moz-transform: translateX(-50%);
+  -ms-transform: translateX(-50%);
+  -o-transform: translateX(-50%);
+  transform: translateX(-50%);
+  bottom: -45px;
+}
+
+.block2-btn-delete {
   position: absolute;
   left: 50%;
   -webkit-transform: translateX(-50%);
@@ -1744,6 +1831,18 @@ li.sale-noti > a {
 
 .block2-overlay:hover .block2-btn-addcart {
   bottom: 20px;
+}
+
+.block2-overlay:hover .block2-btn-viewdetail {
+  bottom: 20px;
+}
+
+.block2-overlay:hover .block2-btn-edit {
+  bottom: 70px;
+}
+
+.block2-overlay:hover .block2-btn-delete {
+  bottom: 120px;
 }
 
 .block2-overlay:hover .block2-btn-addwishlist,
@@ -2349,4 +2448,110 @@ input.num-product::-webkit-inner-spin-button {
 
 /*------------My Style--------------------*/
 
+mycontainer {
+	font-family: Arial;
+	color: white;
+}
 
+.newcontainer {
+    padding: 16px;
+}
+
+.mysplit {
+	height: 100%;
+	width: 50%;
+	position: fixed;
+	z-index: 1;
+	top: 0;
+	overflow-x: hidden;
+	padding-top: 0;
+}
+
+.myleft {
+	left: 0;
+	background-color: #ffffff;
+}
+
+.myright {
+	right: 0;
+	background-color: #ffffff;
+}
+
+.mycentered {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	text-align: center;
+}
+
+.mycentered img {
+	width: 150px;
+	border-radius: 50%;
+}
+
+.mymodal {
+	z-index: 999;
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    /*z-index: 1;  Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    padding-top: 60px;
+}
+
+/* Modal Content/Box */
+.mymodal-content {
+	z-index: 1000;
+    background-color: #fefefe;
+    margin: 5% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
+    border: 1px solid #888;
+	border-radius: 15px;
+    width: 80%; /* Could be more or less, depending on screen size */
+	max-width: 700px;
+}
+
+.myanimate {
+    -webkit-animation: animatezoom 0.6s;
+    animation: animatezoom 0.6s
+}
+
+@-webkit-keyframes animatezoom {
+    from {-webkit-transform: scale(0)} 
+    to {-webkit-transform: scale(1)}
+}
+    
+@keyframes animatezoom {
+    from {transform: scale(0)} 
+    to {transform: scale(1)}
+}
+
+@media screen and (max-width: 300px) {
+    span.psw {
+       display: block;
+       float: none;
+    }
+    .cancelbtn {
+       width: 100%;
+    }
+}
+
+.myclose {
+    position: absolute;
+    right: 25px;
+    top: 0;
+    color: #000;
+    font-size: 35px;
+    font-weight: bold;
+}
+
+.myclose:hover,
+.myclose:focus {
+    color: red;
+    cursor: pointer;
+}

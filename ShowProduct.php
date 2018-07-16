@@ -16,6 +16,10 @@
 		$_SESSION['login']='GUEST';
 	}
 	
+	if(!isset($_SESSION['lgid'])){
+		$_SESSION['lgid']=0;
+	}
+	
 	//--------------- Privilege -------------------//
 	$allowadd = array(8,9);
 	$allowdelete = array(8,9);
@@ -46,7 +50,7 @@
 		$result = mysqli_query($con,$qry.$ord);
 	}
 	//--------------------------------------------------------//
-	
+	$per = false;
 	if(isset($_POST['add_to_cart'])){
 		if($_POST['hidden_instock']){
 			if(number_format($_POST['hidden_instock']) > 0 && number_format($_POST['quan']) <= number_format($_POST['hidden_instock']))$per = true;
@@ -65,7 +69,7 @@
 					'item_quantity' => $_POST["quan"]);
 					$_SESSION["shopping_cart"][$count] = $item_array;
 					echo '<script>alert("Add Success!");</script>';
-					echo '<script>window.location="ShowProduct.php";</script>';
+					//echo '<script>window.location="ShowProduct.php";</script>';
 				}else{
 					echo '<script>alert("This Item Is Already Added");</script>';
 					echo '<script>window.location="ShowProduct.php";</script>';
@@ -78,7 +82,7 @@
 					'item_quantity' => $_POST["quan"]);
 				$_SESSION["shopping_cart"][0] = $item_array;
 				echo '<script>alert("Add Success!");</script>';
-				echo '<script>window.location="ShowProduct.php";</script>';
+				//echo '<script>window.location="ShowProduct.php";</script>';
 			}
 		}else{
 			echo '<script>alert("Run Out of this product ('.$_POST['hidden_name'].')!")</script>';
@@ -101,6 +105,11 @@
 			echo '<script>alert("Items are Removed");</script>';
 			echo '<script>window.location="ShowProduct.php";</script>';
 		}
+		else if($_GET['action'] == "logout"){
+			session_destroy();
+			echo '<script>alert("LOGGED OUT!");</script>';
+			echo '<script>window.location="ShowProduct.php";</script>';
+		}
 	}
 	
 	if(isset($_GET['search-product'])){
@@ -116,6 +125,8 @@
 	<meta http-equiv=Content-Type content="text/html; charset=utf-8">
 	<title>PRODUCT LIST</title>
     <head>
+	<style>
+	</style>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->
 	<link rel="icon" type="image/png" href="images/icons/favicon.png"/>
@@ -156,6 +167,10 @@
 		<div class="w-size11">
 			<button class="flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" onclick="out();location.href='/mfu/index.php'">Log In</a>
 		</div>
+		<br/>
+		<div class="w-size12">
+			<button class="flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" onclick="location.href='/mfu/products.php'">Products</a>
+		</div>
 		<?php endif;?>
 		<table>
 		<?php 
@@ -181,22 +196,22 @@
 				<form method="post" action="ShowProduct.php?action=add&id=<?php echo $id;?>">
 					<tr>
 						<td colspan="3" align="center" width="200" height="250" valign="middle">
-							<img src="/mfu/productimages/<?php echo $image; ?>" width="200" height="/width*200" onclick="location.href='/mfu/UpdateForm.php?id=<?php echo $id;?>';">
+							<img style="max-height:200px" src="/mfu/productimages/<?php echo $image; ?>" width="200" height="/width*200" onclick="location.href='/mfu/UpdateForm.php?id=<?php echo $id;?>';">
 						</td>
 					</tr>
 					<tr>
 						<th style="text-align:right" width="80" height="40">Name :&nbsp;</th>
-						<td width="200" colspan="2"><a href="/mfu/UpdateForm.php?id=<?php echo $id;?>"><?php echo $pname; ?></a></td>
+						<td width="200" colspan="2"><a href="/mfu/UpdateForm.php?id=<?php echo $id;?>">&nbsp;<?php echo $pname; ?></a></td>
 					</tr>
 					<tr>
 						<th style="text-align:right" height="30">Price :&nbsp;</th>
 						<td colspan="2">
 							<?php 
-								if($sale==0){echo "฿".$price;}
-								else{echo "<S style='color:red;'><h>";
-										echo "฿".$price;
+								if($sale==0){echo "&nbsp;฿".number_format($price);}
+								else{echo "&nbsp;<S style='color:red;'><h>";
+										echo "฿".number_format($price);
 										echo "</h></S> → ";
-										echo "฿".$sale;
+										echo "฿".number_format($sale);
 									}
 							?>
 						</td>
@@ -206,71 +221,117 @@
 						<input type="hidden" name="hidden_name" value="<?php echo $pname;?>" />
 						<input type="hidden" name="hidden_price" value="<?php echo $real;?>" />
 						<input type="hidden" name="hidden_instock" value="<?php echo $instock;?>" />
+						<input type="hidden" name="hidden_img" value="<?php echo $image;?>" />
 						<th style="text-align:right" height="30px">Quantity :&nbsp;</th>
-						<td class="bo2" width="50px"><input type="number" min="1" max="9" name="quan" style="width:50px; height:30px; text-align:right" value="1"></input></td>
-						<td align="center"><button type="submit" class="flex-c-m size100 bg7 bo-rad-15 hov1 s-text14 trans-0-4" name="add_to_cart">Add to Cart</button></td>
+						
+						<td class="bo2">
+						
+							<!--<input type="number" min="1" max="9" name="quan" style="width:50px; height:30px; text-align:right" value="1"></input>-->
+							<div class="flex-w bo5 of-hidden w-size17">
+								<button class="btn-num-product-down color1 flex-c-m size7 bg8 eff2">
+									<i class="fs-12 fa fa-minus" aria-hidden="true"></i>
+								</button>
+
+								<input class="size8 m-text18 t-center num-product" type="number" name="quan" value="1" min="1" max="9">
+
+								<button class="btn-num-product-up color1 flex-c-m size7 bg8 eff2">
+									<i class="fs-12 fa fa-plus" aria-hidden="true"></i>
+								</button>
+							</div>
+						
+						</td>
+						<td align="center">
+							<?php if($instock>0):?>
+								<button type="submit" style="padding:8%; width:100%" class="flex-c-m bg7 hov1 s-text14 trans-0-4" name="add_to_cart">Add to Cart</button>
+							<?php else:?>
+								<button type="submit" style="padding:8%; width:100%" class="flex-c-m bg7 hov1 s-text14 trans-0-4" name="add_to_cart"><S>Add to Cart</S></button>
+							<?php endif;?>
+						</td>
 					</tr>
 				</form>
 				<?php endif;?>
 				<?php if(in_array($_SESSION['c'],$allowdelete)):?>
 					<tr>
-						<td colspan="3" align="center" height="40px"><a href="/mfu/DeleteBTN.php?id=<?php echo $id;?>" onclick="return confirm('Sure?')">Delete this product</a></td>
+						<td align="center">In Stock : </td>
+						<td colspan=2><?php echo "&nbsp;".$instock;?></td>
+					</tr>
+					<tr>
+						<td colspan="3" align="center" height="40px">
+							<a href="/mfu/DeleteBTN.php?id=<?php echo $id;?>" onclick="return confirm('Sure?')">Delete this product</a>
+						</td>
 					</tr>
 				<?php endif;?>
 				</table>
 				<?php
 					if($count%$cl!=0){
-						echo "</td><td width='20px'>&nbsp;</td>";
+						echo "</td><td width='15px'>&nbsp;</td>";
 					}else{
-						echo "</td></tr><tr height='20px'>&nbsp;</tr>";
+						echo "</td></tr><tr height='15px'>&nbsp;</tr>";
 					}
 				?>
 		<?php endwhile; ?>
 		</table>
 		<?php if(in_array($_SESSION['c'],$allowadd)):?>
-		<br/><br/>
+		<br/>
 		<div class="w-size11">
 			<button type="button" class="flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" onclick="location.href='/mfu/AddProductForm.php';">Add</button>
-		</div>
-		<?php endif;?><br/><br/>
+		</div><br/>
+		<?php endif;?><br/>
 		<h4 class="m-text14 p-b-32">Filters</h4>
-		<form method="post">
-			<div class="rs2-select2 bo4 w-size12">
-			<select class="selection-2" name="sortid" id="sortid">
-				<option value=0 selected>Sorting Options</option>
-				<option value=0>Released : New to Old</option>
-				<option value=1>Released : Old to New</option>
-				<option value=2>Price: high to low</option>
-				<option value=3>Price: low to high</option>
-				<option value=4>Discount</option>
-			</select>
-			</div><br/><!--
-					<div class="search-product pos-relative bo4 of-hidden col-sm-3 col-md-3 col-lg-3">
-						<input class="s-text7 size6 p-l-10 p-r-25" type="text" name="lower" />
-					</div>
-					<div class="search-product pos-relative bo4 of-hidden col-sm-3 col-md-3 col-lg-3">
-						<input class="s-text7 size6 p-l-10 p-r-25" type="text" name="upper" />
-					</div>-->
-		<div class="w-size11">
-			<button class="flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" type="submit" name="sort">
-				Sort
-			</button>
-		</div>
-		</form><br/>
+		<table>
+			<form method="post">
+				<tr>
+					<td>
+						<div class="rs2-select2 bo4 w-size12">
+							<select class="selection-2" name="sortid" id="sortid">
+								<option value=0 selected>Sorting Options</option>
+								<option value=0>Released : New to Old</option>
+								<option value=1>Released : Old to New</option>
+								<option value=2>Price: high to low</option>
+								<option value=3>Price: low to high</option>
+								<option value=4>Discount</option>
+							</select>
+						</div>
+					</td>
+					<td width="100px" align="center">
+						<!--<div class="search-product pos-relative bo4 of-hidden col-sm-3 col-md-3 col-lg-3">
+									<input class="s-text7 size6 p-l-10 p-r-25" type="text" name="lower" />
+								</div>
+								<div class="search-product pos-relative bo4 of-hidden col-sm-3 col-md-3 col-lg-3">
+									<input class="s-text7 size6 p-l-10 p-r-25" type="text" name="upper" />
+								</div>-->
+						<div class="w-size11">
+							<button style="padding:25%; width:100%" class="flex-c-m bg7 bo-rad-10 hov1 s-text14 trans-0-4" type="submit" name="sort">
+								Sort
+							</button>
+						</div>
+					</td>
+				</tr>
+			</form>
+		</table><br/>
 		<div class="search-product pos-relative bo4 of-hidden col-sm-3 col-md-3 col-lg-3">
 			<form method="get">
-				<input class="s-text7 size6 p-l-23 p-r-50" type="text" name="searchkey" placeholder="Search Products...">
+				<input class="s-text7 size6 p-l-23 p-r-50" type="text" name="searchkey" placeholder="Search Products..."/>
 					<button class="flex-c-m size5 ab-r-m color2 color0-hov trans-0-4" type="submit" name="search-product">
 						<i class="fs-12 fa fa-search" aria-hidden="true"></i>
 					</button>
 			</form>
 		</div><br/><br/>
 		<?php if(!in_array($_SESSION['c'],$showaccount)):?>
-			<?php echo "Account : ".$_SESSION['login'];?>
-		</h5><br/><br/>
-		<div class="w-size11">
-			<button class="flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" onclick="out();location.href='/mfu/index.php'">LOGOUT</a>
-		</div><br/>
+			<h1>Manager Menu</h1>
+			<br/>
+			<h5><?php echo "Account : ".$_SESSION['login'];?></h5>
+		<br/>
+			<table width="60%" style="max-width:300px">
+				<tr>
+					<td align="center"><div class="w-size11">
+						<button class="flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" onclick="location.href='/mfu/ViewOrder.php'">Order</a>
+					</div></td>
+					<td align="center"><div class="w-size11">
+						<button class="flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" onclick="out();location.href='/mfu/index.php'">LOGOUT</a>
+					</div></td>
+				</tr>
+			</table>
 		<?php endif;?>
 		
 		<?php if(in_array($_SESSION['c'],$addproducttocart)):?>
@@ -278,9 +339,19 @@
 			<?php if(isset($_SESSION['login'])){
 				echo "Account : ".$_SESSION['login'];
 			}?></h5><br/>
-			<div class="w-size11">
-				<button class="flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" onclick="out();location.href='/mfu/index.php'">LOGOUT</a>
-			</div><br/>
+			<table width="80%" style="max-width:500px">
+				<tr>
+					<td align="center"><div class="w-size11">
+						<button class="flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" onclick="location.href='/mfu/EditSelf.php'">Setting</a>
+					</div></td>
+					<td align="center"><div class="w-size11">
+						<button class="flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" onclick="location.href='/mfu/ViewOrder.php'">Order</a>
+					</div></td>
+					<td align="center"><div class="w-size11">
+						<button class="flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" onclick="out();location.href='/mfu/index.php'">LOGOUT</a>
+					</div></td>
+				</tr>
+			</table><br/>
 		<table border="1">
 			<tr>
 				<th width="200px" height="30px"><center>Item Name</th>
@@ -313,7 +384,11 @@
 			<?php endif; ?>
 		</table>
 			<?php if(isset($_SESSION["shopping_cart"]) && $_SESSION["shopping_cart"] != Array()):;?>
-				<br/><center><button class="w-size11 flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" onclick="alert('Confirmed');location.href='/mfu/ShowProduct.php'">Confirm</a></center>
+				<br/><center>
+				<button class="w-size11 flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" 
+						onclick="alert('Confirmed');location.href='/mfu/PaymentForm.php'">
+					Confirm
+				</button></center>
 			<?php endif; ?>
 		<?php endif; ?>
 		<br/><br/><br/><br/>
