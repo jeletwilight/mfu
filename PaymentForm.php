@@ -8,7 +8,7 @@
 	session_start();
 	
 	if(!isset($_SESSION['shopping_cart'])){
-		echo "<script>window.location='/mfu/ShowProduct.php'</script>";
+		echo "<script>window.location='/mfu/products.php'</script>";
 	}
 	
 	if(isset($_GET['action'])){
@@ -20,7 +20,7 @@
 					if($_SESSION["shopping_cart"] != Array()){
 						echo '<script>window.location="PaymentForm.php";</script>';
 					}else{
-						echo '<script>window.location="ShowProduct.php";</script>';
+						echo '<script>window.location="products.php";</script>';
 					}
 				}
 			}
@@ -28,7 +28,7 @@
 		else if($_GET['action'] == "deleteall"){
 			unset($_SESSION["shopping_cart"]);
 			echo '<script>alert("Items are Removed");</script>';
-			echo '<script>window.location="ShowProduct.php";</script>';
+			echo '<script>window.location="products.php";</script>';
 		}
 	}
 	
@@ -120,6 +120,7 @@
 			$usingaddress = $usingresult1['id'];
 			$peraddress = 'true';
 		}
+		$prom = 0;
 		if($_POST['radiopay']==1){
 			if($dcardno == "No Information" || $dholder == "No Information"){
 				$progress = false;
@@ -152,23 +153,32 @@
 			$usingresult2 = mysqli_fetch_array($using2);
 			$usingpay = $usingresult2['id'];
 			$perpay = 'true';
+		}else if($_POST['radiopay'] == 3){
+			$dpayid = 0;
+			$usingpay = 0;
+			$prom = 1;
 		}
 		
 		if($progress == true){
 			$error = false;
 			if($peraddress == 'false' && $perpay == 'false'){
-				$sql = "INSERT INTO receipt VALUES ('','$lgid','$daddrid','$dpayid','0','','0','0')";
+				$sql = "INSERT INTO receipt VALUES ('','$lgid','$daddrid','$dpayid','0','','0','0','$prom')";
 			}elseif($peraddress == 'true' && $perpay == 'false'){
-				$sql = "INSERT INTO receipt VALUES ('','$lgid','$usingaddress','$dpayid','0','','0','0')";
+				$sql = "INSERT INTO receipt VALUES ('','$lgid','$usingaddress','$dpayid','0','','0','0','$prom')";
 			}elseif($peraddress == 'false' && $perpay == 'true'){
-				$sql = "INSERT INTO receipt VALUES ('','$lgid','$daddrid','$usingpay','0','','0','0')";
+				$sql = "INSERT INTO receipt VALUES ('','$lgid','$daddrid','$usingpay','0','','0','0','$prom')";
 			}elseif($peraddress == 'true' && $perpay == 'true'){
-				$sql = "INSERT INTO receipt VALUES ('','$lgid','$usingaddress','$usingpay','0','','0','0')";
+				$sql = "INSERT INTO receipt VALUES ('','$lgid','$usingaddress','$usingpay','0','','0','0','$prom')";
 			}else{
 				$error = true;
+				echo "<script>Insert False</script>";
 			}
 			if($error == false){
 				$qry = mysqli_query($con,$sql);
+				if($qry){
+					$last_id = mysqli_insert_id($con);
+					echo '<script>alert("Your Receipt ID = '.$last_id.'")</script>';
+				}
 				$searchsql = "SELECT id FROM receipt WHERE user_id='$lgid' AND producted=0";
 				$searchqry = mysqli_query($con,$searchsql);
 				$searchresult = mysqli_fetch_array($searchqry);
@@ -196,7 +206,7 @@
 				mysqli_query($con,$successsql);
 				unset($_SESSION['shopping_cart']);
 				echo "<script>alert('Confirmed')</script>";
-				echo "<script>window.location='/mfu/ShowProduct.php'</script>";
+				echo "<script>window.location='/mfu/products.php'</script>";
 			}else{
 				echo "<script>alert('Somethings went wrong!')</script>";
 			}
@@ -253,7 +263,7 @@
 			<tr>
 				<td colspan="3" align="right">Total :&nbsp;</td>
 				<td align="center">฿ <?php echo number_format($total,2)?>
-				<td align="center"><a href="/mfu/ShowProduct.php?action=deleteall">All</a></td>
+				<td align="center"><a href="/mfu/products.php?action=deleteall">All</a></td>
 			</tr>
 			<?php endif; ?>
 		</table>
@@ -342,13 +352,17 @@
 			<h2>Payment Method</h2>
 			<table border=1 width="70%">
 				<tr>
-					<td width="50%" valign="top">
-						<input onclick="document.getElementById('paynew').disabled=true; document.getElementById('payold').disabled=false" 
+					<td width="40%" valign="top">
+						<input onclick="pay1();" 
 								type="radio" name="radiopay" value="1" checked>Default</input>
 					</td>
-					<td>
-						<input onclick="document.getElementById('paynew').disabled=false; document.getElementById('payold').disabled=true" 
+					<td width="40%">
+						<input onclick="pay2();" 
 								type="radio" name="radiopay" value="2">New Payment Method</input>
+					</td>
+					<td>
+						<input onclick="pay3();" 
+								type="radio" name="radiopay" value="3">PromptPay</input>
 					</td>
 				</tr>
 				<tr>
@@ -390,7 +404,7 @@
 								</tr>
 								<tr>
 									<td align="right">Holder Name :</td>
-									<td><input type="text" name="holder" size="40" placeholder="Full Name"></input></td>
+									<td><input type="text" name="holder" size="38" placeholder="Full Name"></input></td>
 								</tr>
 								<!--<tr>
 									<td align="right">EXP. Date :</td>
@@ -406,6 +420,11 @@
 							</table>
 						</fieldset>
 					</td>
+					<td align="center">
+						<fieldset id="prompay" style="border:0px" disabled="true">
+							Pay to : 080 000 0000
+						</fieldset>
+					</td>
 				</tr>
 			</table><br/>
 			
@@ -417,24 +436,20 @@
 				<tr>
 					<td width="100" align="center"><input type="submit" name="test" value="Test"></input></td>
 					<td width="100" align="center"><input type="submit" name="submit" /></td>
-					<td width="100" align="center"><button type="button" onclick="location.href='/mfu/ShowProduct.php';">Back</button></td>
+					<td width="100" align="center"><button type="button" onclick="window.history.back();">Back</button></td>
 					<!------------------------------------  WAITING FOR LINK ^^^^ ----------------------->
 				</tr>
 			</table><br/><br/>
 		</form>
 		
 		<!--==========================================================================================-->
-		<script>
-			var loadFile = function(event) {
-				var output = document.getElementById('output');
-				output.src = URL.createObjectURL(event.target.files[0]);
-			};
-			
-		document.querySelector("#today").valueAsDate = new Date();
-		
-		</script>
 		<!--==========================================================================================-->
 		<script>
+		
+		var box1 = document.getElementById('payold');
+		var box2 = document.getElementById('paynew');
+		var box3 = document.getElementById('prompay');
+		
 			function fieldcheck1(input1,input2){
 				document.getElementById(input1).disabled = false;
 				document.getElementById(input2).disabled = true;
@@ -443,6 +458,24 @@
 			function fieldcheck2(input1,input2){
 				document.getElementById(input1).disabled = true;
 				document.getElementById(input2).disabled = false;
+			}
+			
+			function pay1(){
+				box1.disabled = false;
+				box2.disabled = true;
+				box3.disabled = true;
+			}
+			
+			function pay2(){
+				box1.disabled = true;
+				box2.disabled = false;
+				box3.disabled = true;
+			}
+			
+			function pay3(){
+				box1.disabled = true;
+				box2.disabled = true;
+				box3.disabled = false;
 			}
 		</script>
 	</body>

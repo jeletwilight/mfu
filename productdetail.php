@@ -1,5 +1,11 @@
 <?php
-	$con = mysqli_connect("localhost","root","","mfu");
+	$host = "localhost";
+	$usr = "root";
+	$pw = "";
+	$db = "mfu";
+	$port = "";
+
+	$con = mysqli_connect($host, $usr, $pw, $db);
 	
 	if($con === false){
 		die("ERROR: Could not connect." . mysqli_connect_error());
@@ -73,6 +79,57 @@
 			//echo '<script>window.location="products.php";</script>';
 		}
 	}
+	
+	//----------------------- Login --------------------------//
+	
+	if(isset($_POST['login'])){
+		$user = $_POST['loginname'];
+		$pass = $_POST['loginpsw'];
+		
+		$sql = "SELECT * FROM login WHERE username='$user' AND password='$pass' LIMIT 1";
+		$qry = mysqli_query($con, $sql);
+		$result = mysqli_fetch_array($qry);
+		
+		if($result != false){
+			$_SESSION["login"] = $result['username'];
+			$_SESSION["c"] = $result['type'];
+			$_SESSION["lgid"] = $result['id'];
+			echo '<script>window.history.back();</script>';
+		}else{
+			echo '<script language="javascript">';
+			echo 'alert("Wrong ID/Password!")';
+			echo '</script>';
+			echo '<script>window.history.back();</script>';
+		}
+	}
+	
+	//--------------------------------------------------------//
+	
+	//----------------- Delete Item in cart ------------------//
+	
+	if(isset($_GET['action'])){
+		if($_GET['action'] == "delete"){
+			foreach($_SESSION["shopping_cart"] as $keys => $values){
+				if($values["item_id"] == $_GET['id']){
+					unset($_SESSION["shopping_cart"][$keys]);
+					echo '<script>alert("Item is Removed");</script>';
+					echo '<script>window.history.back();</script>';
+				}
+			}
+		}
+		else if($_GET['action'] == "deleteall"){
+			unset($_SESSION["shopping_cart"]);
+			echo '<script>alert("All items are Removed");</script>';
+			echo '<script>window.history.back();</script>';
+		}
+		else if($_GET['action'] == "logout"){
+			session_destroy();
+			echo '<script>alert("LOGGED OUT!");</script>';
+			echo '<script>window.location.href="/mfu/products.php";</script>';
+		}
+	}
+	
+	//--------------------------------------------------------//
 ?>
 
 
@@ -81,7 +138,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Product Detail</title>
+	<title>Product Detail - <?php echo $oldproductname;?></title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->
@@ -119,27 +176,28 @@
 		<div class="container-menu-header">
 			<div class="topbar">
 				<div class="topbar-social">
-					<a href="#" class="topbar-social-item fa fa-facebook"></a>
+					<a href="/mfu/home.php" class="topbar-social-item">9elan Co.,Ltd.</a>
+					<!--<a href="#" class="topbar-social-item fa fa-facebook"></a>
 					<a href="#" class="topbar-social-item fa fa-instagram"></a>
 					<a href="#" class="topbar-social-item fa fa-pinterest-p"></a>
 					<a href="#" class="topbar-social-item fa fa-snapchat-ghost"></a>
-					<a href="#" class="topbar-social-item fa fa-youtube-play"></a>
+					<a href="#" class="topbar-social-item fa fa-youtube-play"></a>-->
 				</div>
 
 				<span class="topbar-child1">
-					Free shipping for standard order over $100
+					Free shipping for standard order over ฿300
 				</span>
 
 				<div class="topbar-child2">
 					<span class="topbar-email">
-						fashe@example.com
+						9elan.company@gmail.com
 					</span>
 				</div>
 			</div>
 
 			<div class="wrap_header">
 				<!-- Logo -->
-				<a href="home.php" class="logo">
+				<a href="#" class="logo">
 					<img src="/mfu/myimages/mylogo.png">
 				</a>
 
@@ -156,20 +214,20 @@
 								<a href="products.php">Shop</a>
 							</li>
 
-							<li>
+							<!--<li>
 								<a href="cart.html">Cart</a>
+							</li>-->
+
+							<li>
+								<a href="blog.html">News</a>
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="about.html">About us</a>
 							</li>
 
 							<li>
-								<a href="about.html">About</a>
-							</li>
-
-							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
 					</nav>
@@ -177,22 +235,98 @@
 
 				<!-- Header Icon -->
 				<div class="header-icons">
-					<a href="#">
-						<?php 
-							if($_SESSION['login']!='GUEST'){
-								echo $_SESSION['login']."&nbsp;&nbsp;";
-							}else{
-								echo "<a href='index.php'>Login&nbsp;&nbsp;</a>";
-							}
-						?>
+					<?php 
+						if($_SESSION['login']!='GUEST' && $_SESSION['c']>6):
+					?>
+					<div class="header-wrapicon1">
+						<a class="header-icon1 js-show-header-dropdown"><?php echo $_SESSION['login']."&nbsp;&nbsp;";?></a>
+						<img src="images/icons/icon-header-01.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
+						<div class="header-cart header-dropdown">
+							<ul class="header-cart-wrapitem">
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<b class="m-text14">MY ACCOUNT</b>
+										</center>
+									</div>
+								</li>
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/products.php?action=logout" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												LOG OUT
+											</a>
+										</center>
+									</div>
+								</li>
+							</ul>
+						</div>
+					</div>
+					<?php 
+						elseif($_SESSION['login']!='GUEST' && $_SESSION['c']!='0'):	
+					?>
+					<div class="header-wrapicon1">
+						<a class="header-icon1 js-show-header-dropdown"><?php echo $_SESSION['login']."&nbsp;&nbsp;";?></a>
+						<img src="images/icons/icon-header-01.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
+						<div class="header-cart header-dropdown">
+							<ul class="header-cart-wrapitem">
+
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<b class="m-text14">MY ACCOUNT</b>
+										</center>
+									</div>
+								</li>
+								
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/customerorder.php" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												ORDER HISTORY
+											</a>
+										</center>
+									</div>
+								</li>
+
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/editaccount.php" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												EDIT ACCOUNT
+											</a>
+										</center>
+									</div>
+								</li>
+
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/products.php?action=logout" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												LOG OUT
+											</a>
+										</center>
+									</div>
+								</li>
+								
+							</ul>
+						</div>
+					</div>
+					<?php
+						else:
+					?>
+					<button onclick='document.getElementById("loginbox").style.display="block"'>Login&nbsp;&nbsp;</button>
+					<a class="header-wrapicon1 dis-block">
+						<img src="images/icons/icon-header-01.png" class="header-icon1" alt="ICON" onclick='document.getElementById("loginbox").style.display="block"'>
 					</a>
-					<a href="#" class="header-wrapicon1 dis-block">
-						<img src="images/icons/icon-header-01.png" class="header-icon1" alt="ICON">
-					</a>
+					<?php endif;?>
+					
+					
 
 					<?php
 						if(in_array($_SESSION['c'],$addproducttocart)):
 					?>
+					
 					<span class="linedivide1"></span>
 
 					<div class="header-wrapicon2">
@@ -205,6 +339,13 @@
 
 						<!-- Header cart noti -->
 						<div class="header-cart header-dropdown">
+									<li class="header-cart-wrapitem header-cart-item">
+										<div class="header-cart-item-mytxt">	
+											<center>
+												<b class="m-text14">MY CART</b>
+											</center>
+										</div>
+									</li>
 							<?php if(!empty($_SESSION["shopping_cart"])):?>
 								<ul class="header-cart-wrapitem">
 									<?php 	$total = 0;
@@ -216,7 +357,7 @@
 											</div>
 
 											<div class="header-cart-item-txt">
-												<a href="#" class="header-cart-item-name">
+												<a href="/mfu/productdetail.php?id=<?php echo $values["item_id"];?>" class="header-cart-item-name">
 													<?php echo $values["item_name"];?>
 												</a>
 
@@ -237,20 +378,20 @@
 									<div class="header-cart-wrapbtn">
 										<!-- Button -->
 										<a href="/mfu/products.php?action=deleteall" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
-											Delete All
+											Clear Cart
 										</a>
 									</div>
 
 									<div class="header-cart-wrapbtn">
 										<!-- Button -->
-										<a href="#" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+										<a href="/mfu/payment.php" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
 											Check Out
 										</a>
 									</div>
 								</div>
 							<?php else:?>
 								<a class="header-cart-item-name">
-									No item in cart
+									No item
 								</a>
 							<?php endif;?>
 						</div>
@@ -260,182 +401,312 @@
 			</div>
 		</div>
 
-		<!-- Header Mobile -->
-		<div class="wrap_header_mobile">
-			<!-- Logo moblie -->
-			<a href="index.html" class="logo-mobile">
-				<img src="images/icons/logo.png" alt="IMG-LOGO">
-			</a>
+		<div>
+			<!-- Header Mobile -->
+			<div class="wrap_header_mobile">
+				<!-- Logo moblie -->
+				<a href="#" class="logo-mobile">
+					<img src="/mfu/myimages/mylogo.png">
+				</a>
 
-			<!-- Button show menu -->
-			<div class="btn-show-menu">
-				<!-- Header Icon mobile -->
-				<div class="header-icons-mobile">
-					<a href="#" class="header-wrapicon1 dis-block">
-						<img src="images/icons/icon-header-01.png" class="header-icon1" alt="ICON">
-					</a>
-
-					<span class="linedivide2"></span>
-
-					<div class="header-wrapicon2">
-						<img src="images/icons/icon-header-02.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
-						<span class="header-icons-noti">0</span>
-
-						<!-- Header cart noti -->
+				<!-- Button show menu -->
+				<div class="btn-show-menu">
+					<!-- Header Icon mobile -->
+					<div class="header-icons-mobile">
+						<?php 
+						if($_SESSION['login']!='GUEST' && $_SESSION['c']>6):
+					?>
+					<div class="header-wrapicon1">
+						<img src="images/icons/icon-header-01.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
 						<div class="header-cart header-dropdown">
 							<ul class="header-cart-wrapitem">
 								<li class="header-cart-item">
-									<div class="header-cart-item-img">
-										<img src="images/item-cart-01.jpg" alt="IMG">
-									</div>
-
-									<div class="header-cart-item-txt">
-										<a href="#" class="header-cart-item-name">
-											White Shirt With Pleat Detail Back
-										</a>
-
-										<span class="header-cart-item-info">
-											1 x $19.00
-										</span>
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<b class="m-text14">MY ACCOUNT</b>
+										</center>
 									</div>
 								</li>
-
+								
 								<li class="header-cart-item">
-									<div class="header-cart-item-img">
-										<img src="images/item-cart-02.jpg" alt="IMG">
-									</div>
-
-									<div class="header-cart-item-txt">
-										<a href="#" class="header-cart-item-name">
-											Converse All Star Hi Black Canvas
-										</a>
-
-										<span class="header-cart-item-info">
-											1 x $39.00
-										</span>
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<a>Account : <?php echo $_SESSION['login'];?></a>
+										</center>
 									</div>
 								</li>
-
+								
 								<li class="header-cart-item">
-									<div class="header-cart-item-img">
-										<img src="images/item-cart-03.jpg" alt="IMG">
-									</div>
-
-									<div class="header-cart-item-txt">
-										<a href="#" class="header-cart-item-name">
-											Nixon Porter Leather Watch In Tan
-										</a>
-
-										<span class="header-cart-item-info">
-											1 x $17.00
-										</span>
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/products.php?action=logout" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												LOG OUT
+											</a>
+										</center>
 									</div>
 								</li>
 							</ul>
-
-							<div class="header-cart-total">
-								Total: $75.00
-							</div>
-
-							<div class="header-cart-buttons">
-								<div class="header-cart-wrapbtn">
-									<!-- Button -->
-									<a href="cart.html" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
-										View Cart
-									</a>
-								</div>
-
-								<div class="header-cart-wrapbtn">
-									<!-- Button -->
-									<a href="#" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
-										Check Out
-									</a>
-								</div>
-							</div>
 						</div>
 					</div>
-				</div>
+					<?php 
+						elseif($_SESSION['login']!='GUEST' && $_SESSION['c']!='0'):	
+					?>
+					<div class="header-wrapicon1">
+						<img src="images/icons/icon-header-01.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
+						<div class="header-cart header-dropdown">
+							<ul class="header-cart-wrapitem">
 
-				<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
-					<span class="hamburger-box">
-						<span class="hamburger-inner"></span>
-					</span>
-				</div>
-			</div>
-		</div>
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<b class="m-text14">MY ACCOUNT</b>
+										</center>
+									</div>
+								</li>
+								
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<a>Account : <?php echo $_SESSION['login'];?></a>
+										</center>
+									</div>
+								</li>
+								
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/customerorder.php" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												ORDER HISTORY
+											</a>
+										</center>
+									</div>
+								</li>
 
-		<!-- Menu Mobile -->
-		<div class="wrap-side-menu" >
-			<nav class="side-menu">
-				<ul class="main-menu">
-					<li class="item-topbar-mobile p-l-20 p-t-8 p-b-8">
-						<span class="topbar-child1">
-							Free shipping for standard order over $100
-						</span>
-					</li>
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/editaccount.php" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												EDIT ACCOUNT
+											</a>
+										</center>
+									</div>
+								</li>
 
-					<li class="item-topbar-mobile p-l-20 p-t-8 p-b-8">
-						<div class="topbar-child2-mobile">
-							<span class="topbar-email">
-								fashe@example.com
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/products.php?action=logout" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												LOG OUT
+											</a>
+										</center>
+									</div>
+								</li>
+								
+							</ul>
+						</div>
+					</div>
+					<?php
+						else:
+					?>
+					<a class="header-wrapicon1 dis-block">
+						<img src="images/icons/icon-header-01.png" class="header-icon1" alt="ICON" onclick='document.getElementById("loginbox").style.display="block"'>
+					</a>
+					<?php endif;?>
+
+						<?php
+							if(in_array($_SESSION['c'],$addproducttocart)):
+						?>
+						
+						<span class="linedivide2"></span>
+
+						<div class="header-wrapicon2">
+							<img src="images/icons/icon-header-02.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
+							<span class="header-icons-noti"><?php 
+																	if(isset($_SESSION['shopping_cart']))echo count($_SESSION['shopping_cart']);
+																	else echo "0";
+															?>
 							</span>
 
-							<div class="topbar-language rs1-select2">
-								<select class="selection-1" name="time">
-									<option>USD</option>
-									<option>EUR</option>
-								</select>
+							<!-- Header cart noti -->
+							<div class="header-cart header-dropdown">
+										<li class="header-cart-wrapitem header-cart-item">
+											<div class="header-cart-item-mytxt">	
+												<center>
+													<b class="m-text14">MY CART</b>
+												</center>
+											</div>
+										</li>
+								<?php if(!empty($_SESSION["shopping_cart"])):?>
+									<ul class="header-cart-wrapitem">
+										<?php 	$total = 0;
+												foreach($_SESSION['shopping_cart'] as $key => $values):
+										?>
+											<li class="header-cart-item">
+												<div class="header-cart-item-img" onclick="location.href='/mfu/products.php?action=delete&id=<?php echo $values["item_id"];?>';">
+													<img src="/mfu/productimages/<?php echo $values['item_img'];?>">
+												</div>
+
+												<div class="header-cart-item-txt">
+													<a href="/mfu/productdetail.php?id=<?php echo $values['item_id'];?>" class="header-cart-item-name">
+														<?php echo $values["item_name"];?>
+													</a>
+
+													<span class="header-cart-item-info">
+														<?php echo $values["item_quantity"];?> x ฿ <?php echo number_format($values["item_price"]);?> 
+														= ฿ <?php echo number_format($values["item_quantity"] * $values["item_price"]);?>
+													</span>
+												</div>
+											</li>
+										<?php 	$total = $total + ($values["item_quantity"] * $values["item_price"]);
+												endforeach;
+										?>
+									</ul>
+									<div class="header-cart-total">
+										Total: ฿ <?php echo number_format($total);?>
+									</div>
+									<div class="header-cart-buttons">
+										<div class="header-cart-wrapbtn">
+											<!-- Button -->
+											<a href="/mfu/products.php?action=deleteall" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												Clear Cart
+											</a>
+										</div>
+
+										<div class="header-cart-wrapbtn">
+											<!-- Button -->
+											<a href="/mfu/payment.php" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												Check Out
+											</a>
+										</div>
+									</div>
+								<?php else:?>
+									<a class="header-cart-item-name">
+										No item
+									</a>
+								<?php endif;?>
 							</div>
 						</div>
-					</li>
+						<?php endif;?>
+					</div>
 
-					<li class="item-topbar-mobile p-l-10">
-						<div class="topbar-social-mobile">
-							<a href="#" class="topbar-social-item fa fa-facebook"></a>
-							<a href="#" class="topbar-social-item fa fa-instagram"></a>
-							<a href="#" class="topbar-social-item fa fa-pinterest-p"></a>
-							<a href="#" class="topbar-social-item fa fa-snapchat-ghost"></a>
-							<a href="#" class="topbar-social-item fa fa-youtube-play"></a>
-						</div>
-					</li>
+					<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
+						<span class="hamburger-box">
+							<span class="hamburger-inner"></span>
+						</span>
+					</div>
+				</div>
+			</div>
 
-					<li class="item-menu-mobile">
-						<a href="index.html">Home</a>
-						<ul class="sub-menu">
-							<li><a href="index.html">Homepage V1</a></li>
-							<li><a href="home-02.html">Homepage V2</a></li>
-							<li><a href="home-03.html">Homepage V3</a></li>
-						</ul>
-						<i class="arrow-main-menu fa fa-angle-right" aria-hidden="true"></i>
-					</li>
+			<!-- Menu Mobile -->
+			<div class="wrap-side-menu">
+				<nav class="side-menu">
+					<ul class="main-menu">
+						<li class="item-topbar-mobile p-l-20 p-t-8 p-b-8">
+							<span class="topbar-child1">
+								Free shipping for standard order over $100
+							</span>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="product.html">Shop</a>
-					</li>
+						<li class="item-topbar-mobile p-l-20 p-t-8 p-b-8">
+							<div class="topbar-child2-mobile">
+								<span class="topbar-email">
+									9elan.company@gmail.com
+								</span>
+							</div>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="product.html">Sale</a>
-					</li>
+						<li class="item-topbar-mobile p-l-10">
+							<div class="topbar-social-mobile">
+								<a href="#" class="topbar-social-item fa fa-facebook"></a>
+								<a href="#" class="topbar-social-item fa fa-instagram"></a>
+								<a href="#" class="topbar-social-item fa fa-pinterest-p"></a>
+								<a href="#" class="topbar-social-item fa fa-snapchat-ghost"></a>
+								<a href="#" class="topbar-social-item fa fa-youtube-play"></a>
+							</div>
+						</li>
+						
+						
+						<li class="item-menu-mobile">
+							<a href="Home.php">Home</a>
+						</li>
+						
+						<li class="item-menu-mobile">
+							<a href="products.php">Shop</a>
+							<ul class="sub-menu">
+								<li><a href="products.php">Adenoscence</a></li>
+								<li><a href="products.php">Shop2</a></li>
+								<li><a href="products.php">Shop3</a></li>
+							</ul>
+							<i class="arrow-main-menu fa fa-angle-right" aria-hidden="true"></i>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="cart.html">Features</a>
-					</li>
+						<!--<li class="item-menu-mobile">
+							<a href="cart.html">Cart</a>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="blog.html">Blog</a>
-					</li>
+						<li class="item-menu-mobile">
+							<a href="blog.html">Blog</a>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="about.html">About</a>
-					</li>
+						<li class="item-menu-mobile">
+							<a href="about.html">About</a>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="contact.html">Contact</a>
-					</li>
-				</ul>
-			</nav>
+						<li class="item-menu-mobile">
+							<a href="contact.html">Contact</a>
+						</li>-->
+					</ul>
+				</nav>
+			</div>
 		</div>
 	</header>
+	
+	<div id="loginbox" class="mymodal">
+		<form method="post" action="" class="mymodal-content myanimate">
+			<div class="newcontainer">
+				<p align="right" style="position:relative">
+					<span onclick="document.getElementById('loginbox').style.display='none'" class="myclose" title="Close">&times;</span>
+				</p>
+				<center><font size="11"><b>Login</b></font>
+				<br/>
+				<table width="80%" style="max-width:500px">
+					<tr>
+						<td width='30' align="right" style="padding-right:10px"><label for="loginname"><b>Username</b></label></td>
+						<td width='70%'><div class="bo4">
+							<input style="padding-left:5px; width:100%" type="text" placeholder="Enter Username" name="loginname" required>
+						</div></td>
+					</tr>
+					<br/>
+					<tr>
+						<td align="right" style="padding-right:10px"><label for="loginpsw"><b>Password</b></label></td>
+					
+						<td><div class="bo4">
+							<input style="padding-left:5px; width:100%" type="password" placeholder="Enter Password" name="loginpsw" required>
+						</div></td>
+					</tr>
+				</table>
+					
+				<table width="80%" style="max-width:200px">
+					<tr>
+						<td height="70px" align="center">
+							<div>
+								<button type="submit" name="login" class="w-size11s flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" value="Login">Login</button>
+							</div>
+						</td>
+						<td align="center">
+							<div>
+								<a href="/mfu/register.php" class="w-size11s flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4">Register</a>
+							</div>
+						</td>
+					</tr>
+				</table>
+				
+				
+				</center>
+			</div>
+		</form>
+	</div>
+
 
 
 	<!-- Product Detail -->
@@ -825,6 +1096,17 @@
 
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
+	<script>
+		var mymodal = document.getElementById('loginbox');
+
+		// When the user clicks anywhere outside of the modal, close it
+		window.onclick = function(event) {
+			if (event.target == mymodal) {
+				mymodal.style.display = "none";
+			}
+		}
+		
+	</script>
 
 </body>
 </html>

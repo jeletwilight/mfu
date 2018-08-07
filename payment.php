@@ -1,5 +1,4 @@
 <?php
-
 	$host = "localhost";
 	$usr = "root";
 	$pw = "";
@@ -8,9 +7,9 @@
 
 	$con = mysqli_connect($host, $usr, $pw, $db);
 	
-	if (mysqli_connect_errno()) {
-        die("ERROR: Could not connect." . mysqli_connect_error());
-    }
+	if($con === false){
+		die("ERROR: Could not connect." . mysqli_connect_error());
+	}
 	
 	session_start();
 	
@@ -25,20 +24,6 @@
 	if(!isset($_SESSION['lgid'])){
 		$_SESSION['lgid']=0;
 	}
-	//--------------- Function Define -------------------//
-	function orderoption($input){
-		if($input==0)return " ORDER BY released DESC";
-		if($input==1)return " ORDER BY released ASC";
-		if($input==2)return " ORDER BY currentprice DESC";
-		if($input==3)return " ORDER BY currentprice ASC";
-		if($input==4)return " ORDER BY sale DESC";
-		if($input==5)return " ORDER BY name ASC";
-		if($input==6)return " ORDER BY name DESC";
-		return " ORDER BY released DESC";
-	}
-	$pagination = true;
-	$key = "'%%'";
-	//----------------------------------------------------//
 	
 	//--------------- Privilege -------------------//
 	$allowadd = array(8,9);
@@ -48,127 +33,9 @@
 	$addproducttocart = array(1,9);
 	//---------------------------------------------//
 	
-	mysqli_query($con,"SET NAMES UTF8");
-	
-	//---------------STARTER QUERY-----------------//
-	$qry = "SELECT * FROM product";
-	if(!isset($_SESSION['order'])){
-		$ord = " ORDER BY released DESC";
-		$_SESSION['order'] = 0;
-	}else{
-		$ord = orderoption($_SESSION['order']);
+	if(!isset($_SESSION['shopping_cart'])){
+		echo "<script>window.location='/mfu/products.php'</script>";
 	}
-	$limit = " LIMIT 0,9";
-    $result = mysqli_query($con,$qry.$ord);
-	$productcount = mysqli_num_rows($result);
-	$result = mysqli_query($con,$qry.$ord.$limit);
-	//---------------------------------------------//
-	
-	//---------------------SORT OPTION-------------------------//
-	if(isset($_POST['sort'])){
-		$qry = "SELECT * FROM product";
-		$option = $_POST['sortid'];
-		$_SESSION['order']=$option;
-		$ord = orderoption($option);
-		$limit = "";
-		$result = mysqli_query($con,$qry.$ord.$limit);
-		$productcount = mysqli_num_rows($result);
-	}
-	
-	//--------------------------------------------------------//
-	
-	//-----------------------Pagination-----------------------//
-	
-	$start = 0;
-	$showcount = 9;
-	if($productcount<$showcount){
-		$end = $start+$productcount;
-	}else{
-		$end = $start+$showcount;
-	}
-	$allpage = ceil($productcount/$showcount);
-	
-	if($productcount < $showcount){
-		$limit = " LIMIT $start,$productcount";
-	}else{
-		$limit = " LIMIT $start,$showcount";
-	}
-	
-	if(isset($_GET['page'])){
-		if($_GET['page'] < $allpage-1){
-			$start = ($_GET['page']*9);
-			$end = $start+$showcount;
-		}elseif($_GET['page'] == $allpage-1){
-			$start = ($_GET['page']*9);
-			$remain = $productcount - ($showcount*($_GET['page']));
-			$end = $start+$remain;
-		}
-		else{
-			echo '<script>alert("ERROR!: Index not Founded!");</script>';
-			$start = ($allpage-1)*9;
-			$remain = $productcount - ($showcount*($allpage-1));
-			$end = $start+$remain;
-		}
-		$limit = " LIMIT $start,$showcount";
-		$result = mysqli_query($con,$qry.$ord.$limit);
-	}
-	
-	//--------------------------------------------------------//
-	
-	//------------------ Add item to cart --------------------//
-	$per = false;
-	if(isset($_POST['add_to_cart'])){
-		if($_POST['hidden_instock']){
-			if(number_format($_POST['hidden_instock']) > 0 && number_format($_POST['quan']) <= number_format($_POST['hidden_instock']))$per = true;
-		}else{
-			$per = false;
-		}
-		if($per == true){
-			if(isset($_SESSION["shopping_cart"])){
-				$item_array_id = array_column($_SESSION["shopping_cart"],"item_id");
-				if(!in_array($_GET["id"],$item_array_id)){
-					sleep(2);
-					$count = count($_SESSION["shopping_cart"]);
-					$item_array = array(
-					'item_id' => $_GET["id"],
-					'item_name' => $_POST["hidden_name"],
-					'item_price' => $_POST["hidden_price"],
-					'item_img' => $_POST["hidden_img"],
-					'item_quantity' => $_POST["quan"]);
-					$_SESSION["shopping_cart"][$count] = $item_array;	
-					echo '<script>window.history.back();</script>';
-				}else{
-					sleep(2);
-					echo '<script>alert("This Item Is Already Added, if you want to edit number, please delete this item first.");</script>';
-					echo '<script>window.history.back();</script>';
-				}
-			}else{
-				sleep(2);
-				$item_array = array(
-					'item_id' => $_GET["id"],
-					'item_name' => $_POST["hidden_name"],
-					'item_price' => $_POST["hidden_price"],
-					'item_img' => $_POST["hidden_img"],
-					'item_quantity' => $_POST["quan"]);
-				$_SESSION["shopping_cart"][0] = $item_array;
-				echo '<script>window.history.back();</script>';
-			}
-		}else{
-			sleep(2);
-			echo '<script>alert("Run Out of this product ('.$_POST['hidden_name'].')!")</script>';
-			echo '<script>window.history.back();</script>';
-		}
-	}
-	
-	if(isset($_POST['add_fail'])){
-		sleep(2);
-		//echo '<script>alert("Run Out of this product ('.$_POST['hidden_name'].')!")</script>';
-		echo '<script>window.history.back();</script>';
-	}
-	
-	//--------------------------------------------------------//
-	
-	//----------------- Delete Item in cart ------------------//
 	
 	if(isset($_GET['action'])){
 		if($_GET['action'] == "delete"){
@@ -176,82 +43,217 @@
 				if($values["item_id"] == $_GET['id']){
 					unset($_SESSION["shopping_cart"][$keys]);
 					echo '<script>alert("Item is Removed");</script>';
-					echo '<script>window.history.back();</script>';
+					if($_SESSION["shopping_cart"] != Array()){
+						echo '<script>window.location="PaymentForm.php";</script>';
+					}else{
+						echo '<script>window.location="products.php";</script>';
+					}
 				}
 			}
 		}
 		else if($_GET['action'] == "deleteall"){
 			unset($_SESSION["shopping_cart"]);
-			echo '<script>alert("All items are Removed");</script>';
-			echo '<script>window.history.back();</script>';
-		}
-		else if($_GET['action'] == "logout"){
-			session_destroy();
-			echo '<script>alert("LOGGED OUT!");</script>';
-			echo '<script>window.location.href="/mfu/products.php";</script>';
+			echo '<script>alert("Items are Removed");</script>';
+			echo '<script>window.location="products.php";</script>';
 		}
 	}
 	
-	//--------------------------------------------------------//
+	$lgid = $_SESSION['lgid'];
 	
-	//--------------------- Search query ---------------------//
+	$sql1 = "SELECT * FROM address WHERE user_id='".$_SESSION['lgid']."' AND current='1'";
+	$sql2 = "SELECT * FROM creditcard WHERE user_id='".$_SESSION['lgid']."' AND current='1'";
 	
-	if(isset($_GET['search-product'])){
+	$qry1 = mysqli_query($con,$sql1);
+	$qry2 = mysqli_query($con,$sql2);
+	
+	$result1 = mysqli_fetch_array($qry1);
+	$result2 = mysqli_fetch_array($qry2);
+	
+	if($result1 != 0){
+		$daddrid = $result1['id'];
+		$dprovince = $result1['province'];
+		$ddistrict = $result1['district'];
+		$dsubdistrict = $result1['subdistrict'];
+		$dlocation = $result1['location'];
+		$dzipcode = $result1['zipcode'];
+		$dtelephone = $result1['telephone'];
+	}else{
+		$dprovince = "No Information";
+		$ddistrict = "No Information";
+		$dsubdistrict = "No Information";
+		$dlocation = "No Information";
+		$dzipcode = "No Information";
+		$dtelephone = "No Information";
+	}
+	if($result2 != 0){
+		$dpayid = $result2['id'];
+		$dcardno = $result2['cardnumber'];
+		$dholder = $result2['holder_name'];
+		//$dexp = $result2['exp'];
+		//$dpin = $result2['pin'];
+	}else{
+		$dcardno = "No Information";
+		$dholder = "No Information";
+		//$dexp = "NULLSPACE";
+		//$dpin = "NULLSPACE";
+	}
+	
+	$alltotal=0;
+	
+	
+	if(isset($_POST['submit'])){
+		$peraddress = 'false';
+		$perpay = 'false';
+		$progress = true;
+		if($_POST['radioaddress']==1){
+			if($dprovince == "No Information" || $ddistrict == "No Information" || $dsubdistrict == "No Information" || $dlocation == "No Information" || $dzipcode == "No Information" || $dtelephone == "No Information"){
+				$progress = false;
+				echo '<script>alert("Please Use Another Address!")</script>';
+			}else{
+				$peraddress = 'false';
+			}
+		}
+		else if($_POST['radioaddress']==2){
+			if($_POST['newaddr'] == "" || $_POST['newprov'] == "" || $_POST['newdist'] == "" || $_POST['newsdist'] == "" || $_POST['newzip'] == "" || $_POST['newtel'] == ""){
+				$progress = false;
+				echo "<script>alert('Please Fill All In ADDRESS Form')</script>";
+			}
+			else{
+				$location = $_POST['newaddr'];
+				$province = $_POST['newprov'];
+				$district = $_POST['newdist'];
+				$subdist = $_POST['newsdist'];
+				$zipcode = $_POST['newzip'];
+				$teladdr = $_POST['newtel'];
+				if(isset($_POST['setaddr'])){	
+					$clearqry = "UPDATE address SET current='0' WHERE user_id='$lgid' AND current='1'";
+					mysqli_query($con, $clearqry);
+					$qry2 = "INSERT INTO address VALUES ('','$lgid','$location','$subdist','$district','$province','$zipcode','$teladdr','1')";
+				}
+				else{
+					$qry2 = "INSERT INTO address VALUES ('','$lgid','$location','$subdist','$district','$province','$zipcode','$teladdr','0')";
+				}
+				mysqli_query($con, $qry2);
+			}
+			$using1 = mysqli_query($con, "SELECT * FROM address WHERE user_id='$lgid' 
+																		AND location='$location' 
+																		AND subdistrict='$subdist' 
+																		AND province='$province' 
+																		AND zipcode='$zipcode' 
+																		AND telephone='$teladdr' 
+																LIMIT 1");
+			$usingresult1 = mysqli_fetch_array($using1);
+			$usingaddress = $usingresult1['id'];
+			$peraddress = 'true';
+		}
+		$prom = 0;
+		if($_POST['radiopay']==1){
+			if($dcardno == "No Information" || $dholder == "No Information"){
+				$progress = false;
+				echo '<script>alert("Please Use Another Payment Method!")</script>';
+			}else{
+				$perpay = 'false';
+			}
+		}else if($_POST['radiopay']==2){
+			if($_POST['cdnum1'] == "" || $_POST['cdnum2'] == "" || $_POST['cdnum3'] == "" || $_POST['cdnum4'] == "" || $_POST['holder'] == ""){
+				$progress = false;
+				echo "<script>alert('Please Fill All In Payment Form')</script>";
+			}else{
+				$newcardno = $_POST['cdnum1'].$_POST['cdnum2'].$_POST['cdnum3'].$_POST['cdnum4'];
+				$newholder = $_POST['holder'];
+				//$newcardexp = $_POST['cardexp'];
+				//$newcardpin = $_POST['cardpin'];
+				if(isset($_POST['setcard'])){
+					$clearqry = "UPDATE creditcard SET current='0' WHERE user_id='$lgid' AND current='1'";
+					mysqli_query($con, $clearqry);
+					$qry3 = "INSERT INTO creditcard VALUES ('','$lgid','$newholder','$newcardno','','','','','1')";					
+				}else{
+					$qry3 = "INSERT INTO creditcard VALUES ('','$lgid','$newholder','$newcardno','','','','','0')";
+				}
+				mysqli_query($con, $qry3);
+			}
+			$using2 = mysqli_query($con, "SELECT * FROM creditcard WHERE user_id='$lgid' 
+																		AND holder_name='$newholder'  
+																		AND cardnumber='$newcardno' 
+																	LIMIT 1");
+			$usingresult2 = mysqli_fetch_array($using2);
+			$usingpay = $usingresult2['id'];
+			$perpay = 'true';
+		}else if($_POST['radiopay'] == 3){
+			$dpayid = 0;
+			$usingpay = 0;
+			$prom = 1;
+		}
 		
-		$option = $_GET['searchkey'];
-		$key = "'%".$option."%'";
-		if($key == "'%%'"){
-			$pagination = true;
-			$qry = "SELECT * FROM product";
-			$result = mysqli_query($con,$qry.$ord.$limit);
+		if($progress == true){
+			$error = false;
+			if($peraddress == 'false' && $perpay == 'false'){
+				$sql = "INSERT INTO receipt VALUES ('','$lgid','$daddrid','$dpayid','0','','0','0','$prom')";
+			}elseif($peraddress == 'true' && $perpay == 'false'){
+				$sql = "INSERT INTO receipt VALUES ('','$lgid','$usingaddress','$dpayid','0','','0','0','$prom')";
+			}elseif($peraddress == 'false' && $perpay == 'true'){
+				$sql = "INSERT INTO receipt VALUES ('','$lgid','$daddrid','$usingpay','0','','0','0','$prom')";
+			}elseif($peraddress == 'true' && $perpay == 'true'){
+				$sql = "INSERT INTO receipt VALUES ('','$lgid','$usingaddress','$usingpay','0','','0','0','$prom')";
+			}else{
+				$error = true;
+				echo "<script>Insert False</script>";
+			}
+			if($error == false){
+				$qry = mysqli_query($con,$sql);
+				if($qry){
+					$last_id = mysqli_insert_id($con);
+					echo '<script>alert("Your Receipt ID = '.$last_id.'")</script>';
+				}
+				$searchsql = "SELECT id FROM receipt WHERE user_id='$lgid' AND producted=0";
+				$searchqry = mysqli_query($con,$searchsql);
+				$searchresult = mysqli_fetch_array($searchqry);
+				$receiptid = $searchresult['id'];
+				foreach($_SESSION['shopping_cart'] as $key => $values){
+					$checksql = "SELECT * FROM product WHERE id=".$values["item_id"];
+					$resultcheck = mysqli_query($con,$checksql);
+					$thisrow = mysqli_fetch_array($resultcheck);
+					if($thisrow['instock'] >= $values['item_quantity']){
+						$subsql = "INSERT INTO lineitems VALUES ('',
+																	'$receiptid',
+																	'".$values['item_id']."',
+																	'".$values["item_quantity"]."',
+																	'".($values["item_quantity"] * $values["item_price"])."'
+																)";
+						mysqli_query($con,$subsql);
+						$alltotal = $alltotal + ($values["item_quantity"] * $values["item_price"]);
+						$descsql = "UPDATE product SET instock=instock-".$values["item_quantity"]." WHERE id=".$values["item_id"];
+						mysqli_query($con,$descsql);
+					}else{
+						echo "<script>alert('RUN OUT OF SOME PRODUCT')</script>";
+					}
+				}
+				$successsql = "UPDATE receipt SET subtotal='$alltotal', producted=1 WHERE user_id='$lgid' AND producted=0";
+				mysqli_query($con,$successsql);
+				unset($_SESSION['shopping_cart']);
+				echo "<script>alert('Confirmed')</script>";
+				echo "<script>window.location='/mfu/products.php'</script>";
+			}else{
+				echo "<script>alert('Somethings went wrong!')</script>";
+			}
 		}else{
-			$pagination = false;
-			$qry = "SELECT * FROM product WHERE name LIKE ";
-			$result = mysqli_query($con,$qry.$key.$ord);
-		}
-		
-	}
-	
-	//--------------------------------------------------------//
-	
-	//----------------------- Login --------------------------//
-	
-	if(isset($_POST['login'])){
-		$user = $_POST['loginname'];
-		$pass = $_POST['loginpsw'];
-		
-		$sql = "SELECT * FROM login WHERE username='$user' AND password='$pass' LIMIT 1";
-		$qry = mysqli_query($con, $sql);
-		$result = mysqli_fetch_array($qry);
-		
-		if($result != false){
-			$_SESSION["login"] = $result['username'];
-			$_SESSION["c"] = $result['type'];
-			$_SESSION["lgid"] = $result['id'];
-			echo '<script>window.history.back();</script>';
-		}else{
-			echo '<script language="javascript">';
-			echo 'alert("Wrong ID/Password!")';
-			echo '</script>';
-			echo '<script>window.history.back();</script>';
+			echo "<script>alert('Invalid Information!')</script>";
 		}
 	}
-	
-	//--------------------------------------------------------//
 	
 	if(isset($_POST['test'])){
-		echo "<script type='text/javascript' src='vendor/sweetalert/sweetalert.min.js'></script>",
-			 "<script type='text/javascript'>clickaddcart();</script>";
-		sleep(2);
+		echo "<script>alert('".$_POST['setaddr']."')</script>";
+		
 	}
 ?>
 
 
-<!DOCTYPE html>
 
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Product</title>
+	<title>Payment</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->
@@ -276,8 +278,6 @@
 	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="vendor/slick/slick.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/noui/nouislider.min.css">
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
@@ -776,339 +776,362 @@
 		</div>
 	</header>
 	
-	<div id="loginbox" class="mymodal">
-		<form method="post" action="" class="mymodal-content myanimate">
+	<div id="paybox" class="mymodal">
+		<div class="mymodal-content myanimate">
 			<div class="newcontainer">
 				<p align="right" style="position:relative">
-					<span onclick="document.getElementById('loginbox').style.display='none'" class="myclose" title="Close">&times;</span>
+					<span onclick="document.getElementById('paybox').style.display='none'" class="myclose" title="Close">&times;</span>
 				</p>
-				<center><font size="11"><b>Login</b></font>
-				<br/>
-				<table width="80%" style="max-width:500px">
-					<tr>
-						<td width='30' align="right" style="padding-right:10px"><label for="loginname"><b>Username</b></label></td>
-						<td width='70%'><div class="bo4">
-							<input style="padding-left:5px; width:100%" type="text" placeholder="Enter Username" name="loginname" required>
-						</div></td>
-					</tr>
-					<br/>
-					<tr>
-						<td align="right" style="padding-right:10px"><label for="loginpsw"><b>Password</b></label></td>
-					
-						<td><div class="bo4">
-							<input style="padding-left:5px; width:100%" type="password" placeholder="Enter Password" name="loginpsw" required>
-						</div></td>
-					</tr>
-				</table>
-					
-				<table width="80%" style="max-width:200px">
-					<tr>
-						<td height="70px" align="center">
-							<div>
-								<button type="submit" name="login" class="w-size11s flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" value="Login">Login</button>
-							</div>
-						</td>
-						<td align="center">
-							<div>
-								<a href="/mfu/register.php" class="w-size11s flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4">Register</a>
-							</div>
-						</td>
-					</tr>
-				</table>
-				
-				
+				<center><br/>
+				<font size="11">
+					<b>PromptPay</b>
+				</font><br/>
 				</center>
-			</div>
-		</form>
-	</div>
-
-	<!-- Title Page -->
-	<section class="bg-title-page p-t-50 p-b-40 flex-col-c-m" style="background-image: url(myimages/cpattern.png);">
-		<h2 class="l-text2 t-center">
-			Adenoscence
-		</h2>
-		<p class="m-text13 t-center">
-			Cosmetics Shop
-		</p>
-	</section>
-
-
-	<!-- Content page -->
-	<section class="bgwhite p-t-55 p-b-65">
-		<div class="container">
-			<div class="row">
-				<div class="col-sm-6 col-md-4 col-lg-3 p-b-50">
-					<div class="leftbar p-r-20 p-r-0-sm">
-						<!--  -->
-						
-						<?php if(in_array($_SESSION['c'],$allowadd)):?>
-						<h4 class="m-text14 p-b-7">
-							MANAGER TOOLS
-						</h4>
-						<ul class="p-b-30">
-							<li class="p-t-4">
-								<button class="flex-c-m size1ss bg7 bo-rad-10 hov1 s-text14 trans-0-4" onclick="window.location='/mfu/addproduct.php'">
-									ADD NEW PRODUCT
-								</button>
-							</li>
-							<li class="p-t-4">
-								<button class="flex-c-m size1ss bg7 bo-rad-10 hov1 s-text14 trans-0-4" onclick="window.location='/mfu/customerorder.php'">
-									VIEW ORDERS
-								</button>
-							</li>
-						</ul>
-						<?php endif;?>
-						
-						<h4 class="m-text14 p-b-7">
-							Categories
-						</h4>
-
-						<ul class="p-b-30">
-							<li class="p-t-4">
-								<a href="/mfu/products.php" class="s-text13 active1">
-									All
-								</a>
-							</li>
-
-							<!--<li class="p-t-4">
-								<a href="#" class="s-text13">
-									Women
-								</a>
-							</li>
-
-							<li class="p-t-4">
-								<a href="#" class="s-text13">
-									Men
-								</a>
-							</li>
-
-							<li class="p-t-4">
-								<a href="#" class="s-text13">
-									Kids
-								</a>
-							</li>
-
-							<li class="p-t-4">
-								<a href="#" class="s-text13">
-									Accesories
-								</a>
-							</li>-->
-						</ul>
-
-						<!--  -->
-						<h4 class="m-text14 p-b-15">
-							Search Options
-						</h4>
-						
-							<form method="post">
-								<div class="rs2-select2 bo4 size6">
-									<select class="selection-2" name="sortid" id="sortid">
-										<option disabled value=0 selected>Sorting Options</option>
-										<option value=0>Released : New to Old</option>
-										<option value=1>Released : Old to New</option>
-										<option value=2>Price: high to low</option>
-										<option value=3>Price: low to high</option>
-										<option value=5>Name: Ascending</option>
-										<option value=6>Name: Descending</option>
-										<option value=4>Discount First</option>
-									</select>
-								</div>
-								<br/>
-								<center>
-									<button class="flex-c-m size1 bg7 bo-rad-10 hov1 s-text14 trans-0-4" type="submit" name="sort">
-										Sort
-									</button>
-								</center>
-							</form>
-						<br/>
-						<div class="search-product pos-relative bo4 of-hidden">
-							<form method="get">
-								<input class="s-text7 size6 p-l-23 p-r-50" type="text" name="searchkey" placeholder="Search Products..."/>
-									<button class="flex-c-m size5 ab-r-m color2 color0-hov trans-0-4" type="submit" name="search-product">
-										<i class="fs-12 fa fa-search" aria-hidden="true"></i>
-									</button>
-							</form>
-						</div>
-					</div>
+				
+				<div class="p-l-10">
+				
+					Phone Number : 080 - 000 - 0000<br/>
+					
+					- You'll receive Receipt ID after push Submit<br/>
+					
+					- Pay to above phone number<br/>
+					
+					- Send picture of your payment script to 9elan.company@gmail.com<br/>
+					
+					(Subject with your Receipt ID)<br/>
+					
+					<center>
+					
+					<br/>
+					<div class="m-text14">ex. Receipt ID</div><br/>
+					
+					<img src="/mfu/myimages/htpromp/1.png" style="max-width:500px; max-height:500px"></img><br/>
+					
+					<br/>
+					<div class="m-text14">ex. History</div><br/>
+					
+					<img src="/mfu/myimages/htpromp/3.png" style="max-width:500px; max-height:500px"></img><br/>
+					
+					<img src="/mfu/myimages/htpromp/4.png" style="max-width:500px; max-height:500px"></img><br/>
+					
+					<br/>
+					<div class="m-text14">ex. Send Email</div><br/>
+					<img src="/mfu/myimages/htpromp/2.png" style="max-width:500px; max-height:500px"></img><br/>
+					</center>
 				</div>
 				
-				<div class="col-sm-6 col-md-8 col-lg-9 p-b-50">
-					<!--  -->
-					<div class="flex-sb-m flex-w p-b-35">
-						<div class="flex-w">
-							<h4 class="m-text14 p-b-7">Category :&nbsp;</h4>
-							<div class="m-text15 p-b-12">
-								ALL
-							</div>
-						</div>
-						
-						<span class="s-text8 p-t-5 p-b-5">
-							<?php if(!isset($_GET['searchkey']) || $_GET['searchkey'] == ''):?>
-								Showing <?php echo ($start+1)." - ".$end;?> of <?php echo $productcount;?> results
-							<?php elseif($key == "'%%'"):?>
-								Showing <?php echo ($start+1)." - ".$end;?> of <?php echo $productcount;?> results
-							<?php else:?>
-								Showing search result of '<?php echo $_GET['searchkey'];?>'
-							<?php endif;?>
-							
-						</span>
-					</div>
-					
-					<!-- Product -->
-					<div class="row">
-						<?php while ($row = mysqli_fetch_array($result)):
-									$id = $row['id'];
-									$pname = $row['name'];
-									$instock = $row['instock'];
-									$price = $row['price'];
-									$sale = $row['sale'];
-									$real = $row['currentprice'];
-									$image = $row['imgname'];
-									$blob = $row['image']; ?>
-							<div class="col-sm-12 col-md-6 col-lg-4 p-b-50">
-								<!-- Block2 -->
-								<div class="block2">
-									<div class="block2-img wrap-pic-w of-hidden pos-relative">
-										<center>
-											<table>
-												<tr style="height:300px;">
-													<td style="width:250px;"><img style="max-height:300px;" src="/mfu/productimages/<?php echo $image; ?>" style="border-radius: 20px"></td>
-												</tr>
-											</table>
-										</center>
-										<div class="block2-overlay trans-0-4">
-											<!--<a href="#" class="block2-btn-addwishlist hov-pointer trans-0-4">
-												<i class="icon-wishlist icon_heart_alt" aria-hidden="true"></i>
-												<i class="icon-wishlist icon_heart dis-none" aria-hidden="true"></i>
-											</a>-->
-											
-											
-											<?php if(in_array($_SESSION['c'],$allowupdate)):?>
-											<div class="block2-btn-delete w-size1 trans-0-4">
-												<!-- Button -->
-												<a class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4" 
-														href="/mfu/DeleteBTN.php?id=<?php echo $id;?>"
-														onclick="return confirm('Sure?')">
-													Delete
-												</a>
-											</div>
-											<div class="block2-btn-edit w-size1 trans-0-4">
-												<!-- Button -->
-												<button class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4" 
-														onclick="window.location='/mfu/editproduct.php?id=<?php echo $id;?>'">
-													Edit
-												</button>
-											</div>
-											<?php endif;?>
-											
-											<div class="block2-btn-viewdetail w-size1 trans-0-4">
-												<!-- Button -->
-												<button class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4" 
-														onclick="window.location='/mfu/productdetail.php?id=<?php echo $id;?>'">
-													View Details
-												</button>
-											</div>
-										</div>
-									</div>
-									
-									<?php if(in_array($_SESSION['c'],$addproducttocart)):?>
-										<form method="post" action="products.php?action=add&id=<?php echo $id;?>">
-											<input type="hidden" name="hidden_name" value="<?php echo $pname;?>" />
-											<input type="hidden" name="hidden_price" value="<?php echo $real;?>" />
-											<input type="hidden" id="hidden<?php echo $id;?>" name="hidden_instock" value="<?php echo $instock;?>" />
-											<input type="hidden" name="hidden_img" value="<?php echo $image;?>" />
-											
-											<div class="p-t-10">
-											<table style="border:none; width:100%">
-												<tr>
-													<td align="right">
-														<div class="flex-w bo5s bo-l-rad-8 of-hidden w-size17s">
-															<button class="btn-num-product-down color1 flex-c-m size7ss bg8 eff2">
-																<i class="fs-12 fa fa-minus" aria-hidden="true"></i>
-															</button>
-
-															<input class="size7ss m-text18 t-center num-product" 
-																	id="quan<?php echo $id;?>" type="number" name="quan" value="1" min="1" max="9">
-
-															<button class="btn-num-product-up color1 flex-c-m size7ss bg8 eff2">
-																<i class="fs-12 fa fa-plus" aria-hidden="true"></i>
-															</button>
-														</div>
-													</td>
-													
-													<td width="50%" align="left">
-														<?php if($instock>0):?>
-															<button type="submit" 
-																	class="flex-c-m bg7 hov1 s-text14 trans-0-4 size7s bo-r-rad-8" 
-																	name="add_to_cart"
-																	onclick="clickaddsuccess();">
-																	<!--onclick="clickaddcart('<?php //echo 'quan'.$id;?>','<?php //echo 'hidden'.$id;?>');"-->
-																Add to Cart
-															</button>
-														<?php else:?>
-															<button type="submit"
-																	class="flex-c-m bgred s-text14 size7s bo-r-rad-8" 
-																	name="add_fail" 
-																	onclick="clickaddsold();">
-																Sold Out
-															</button>
-														<?php endif;?>
-													</td>
-												</tr>
-											</table>
-											</div>
-										</form>
-									<?php endif;?>
-									<div class="block2-txt p-t-10">
-										<center>
-											<a href="/mfu/productdetail.php?id=<?php echo $id;?>" class="block2-name dis-block m-text14 p-b-5">
-												<?php echo $pname; ?>
-											</a>
-											<?php if($_SESSION['c']>6):?>
-											<a>
-												Instock : <?php echo $instock; if($instock<=0)echo " <a style='color:red'>(SOLD OUT)<a>"?>
-											</a><br/>
-											<?php endif;?>
-											<a>Price :</a>
-											<span class="block2-price m-text6 p-r-5">
-												<?php 
-													if($sale==0){echo "&nbsp;฿ ".number_format($price);}
-													else{echo "&nbsp;<S style='color:red;'><h>";
-															echo "฿ ".number_format($price);
-															echo "</h></S> → ";
-															echo "฿ ".number_format($sale);
-														}
-												?>
-											</span>
-										</center>
-									</div>
-								</div>
-							</div>
-
-						<?php endwhile;?>
-					</div>
-					
-					<?php if($pagination == true):?>
-						<!-- Pagination -->
-						<div class="pagination flex-m flex-w p-t-26">
-							<!--<a href="#" class="item-pagination flex-c-m trans-0-4 active-pagination">1</a>
-							<a href="#" class="item-pagination flex-c-m trans-0-4">2</a>-->
-							<a name="end"></a>
-							<?php for($pgcount = 0; $pgcount<$allpage; $pgcount = $pgcount+1):?>
-								<a href="/mfu/products.php?page=<?php echo $pgcount;?>" 
-									class="item-pagination flex-c-m trans-0-4 <?php if($_GET['page']==$pgcount)echo "active-pagination";?>"
-								>
-									<?php echo ($pgcount+1);?>
-								</a>
-							<?php endfor;?>
-						</div>
-					<?php endif;?>
-					
-				</div>
+				<br/><br/>
 			</div>
 		</div>
-	</section>
+	</div>
 
+
+	
+	
+	<meta http-equiv=Content-Type content="text/html; charset=utf-8">
+	<title>Payment and Shipping</title>
+	<body>
+	<br/>
+		<center>
+		<h1> Payment & Shipping </h1>
+		<br/>
+		<h4>
+		<?php if(isset($_SESSION['login'])){
+			echo "Account : ".$_SESSION['login'];
+		}?></h4><br/>
+		<div class="p-b-10">
+			<h2>Item List</h2>
+		</div>
+		<div class="container-table-cart pos-relative">
+			<div class="wrap-table-shopping-cart bgwhite">
+				<table border="1" width="80%" style="max-width:1000px" class="table-shopping-cart2">
+					<tr>
+						<th width="200px" height="30px"><center>Item Name</th>
+						<th width="100px"><center>Quantity</th>
+						<th width="150px"><center>Price</th>
+						<th width="150px"><center>Total</th>
+						<th width="80px"><center>Action</th>
+					</tr>
+					<?php
+					if(!empty($_SESSION["shopping_cart"])):
+						$total = 0;
+						foreach($_SESSION["shopping_cart"] as $key => $values):
+					?>
+					<tr>
+						<td><center><a href="/mfu/UpdateForm.php?id=<?php echo $values['item_id'];?>"><?php echo $values["item_name"];?></a></td>
+						<td><center><?php echo $values["item_quantity"];?></td>
+						<td><center><?php echo number_format($values["item_price"]);?></td>
+						<td><center><?php echo number_format($values["item_quantity"] * $values["item_price"]);?></td>
+						<td><center><a href="/mfu/PaymentForm.php?action=delete&id=<?php echo $values['item_id'];?>">Remove</a></td>
+					</tr>
+					<?php
+							$total = $total + ($values["item_quantity"] * $values["item_price"]);
+						endforeach;
+					?>
+					<tr>
+						<td colspan="3" align="right">Total :&nbsp;</td>
+						<td align="center">฿ <?php echo number_format($total,2)?>
+						<td align="center"><a href="/mfu/products.php?action=deleteall">All</a></td>
+					</tr>
+					<?php endif; ?>
+				</table>
+			</div>
+		</div>
+		<br/>
+		<form method="post" action="">
+			<div class="p-b-10">
+				<h2>Shipping Address</h2>
+			</div>
+			
+			<div class="container-table-cart pos-relative">
+				<div class="wrap-table-shopping-cart bgwhite">
+					<table border=1 width="80%" style="max-width:1000px" class="table-shopping-cart2">
+						<fieldset style="border:0;" id="thisischoice">
+							<tr>
+								<td width="45%" valign="top" class="p-l-10">
+									<input onclick="aold();" type="radio" name="radioaddress" value="1" checked>&nbsp;Default</input>
+								</td>
+								<td width="55%" class="p-l-10">
+									<input onclick="anew();" type="radio" name="radioaddress" value="2">&nbsp;New Address</input>
+								</td>
+							</tr>
+						</fieldset>
+						<tr>
+							<td align="center">
+								<table width="90%">
+									<tr>
+										<td align="right" width="40%"><b>Province&nbsp;</b></td>
+										<td><?php echo $dprovince;?></td>
+										<input type="hidden" name="hidden_province" value="<?php echo $dprovince;?>"></input>
+									</tr>
+									<tr>
+										<td colspan=2 align="center"><div class="mylinedivide1"></div></td>
+									</tr>
+									<tr>
+										<td align="right"><b>District&nbsp;</b></td>
+										<td><?php echo $ddistrict;?></td>
+										<input type="hidden" name="hidden_district" value="<?php echo $ddistrict;?>"></input>
+									</tr>
+									<tr>
+										<td colspan=2 align="center"><div class="mylinedivide1"></div></td>
+									</tr>
+									<tr>
+										<td align="right"><b>Sub - District&nbsp;</b></td>
+										<td><?php echo $dsubdistrict;?></td>
+										<input type="hidden" name="hidden_subdistrict" value="<?php echo $dsubdistrict;?>"></input>
+									</tr>
+									<tr>
+										<td colspan=2 align="center"><div class="mylinedivide1"></div></td>
+									</tr>
+									<tr>
+										<td valign="top" align="right"><b>Address&nbsp;</b></td>
+										<td><?php echo $dlocation;?></td>
+										<input type="hidden" name="hidden_location" value="<?php echo $dlocation;?>"></input>
+									</tr>
+									<tr>
+										<td colspan=2 align="center"><div class="mylinedivide1"></div></td>
+									</tr>
+									<tr>
+										<td align="right"><b>Zip Code&nbsp;</b></td>
+										<td><?php echo $dzipcode;?></td>
+										<input type="hidden" name="hidden_zip" value="<?php echo $dzipcode;?>"></input>
+									</tr>
+									<tr>
+										<td colspan=2 align="center"><div class="mylinedivide1"></div></td>
+									</tr>
+									<tr>
+										<td align="right"><b>Tel.&nbsp;</b></td>
+										<td><?php echo $dtelephone;?></td>
+										<input type="hidden" name="hidden_telephone" value="<?php echo $dtelephone;?>"></input>
+									</tr>
+								</table>
+							</td>
+							<td>
+								<fieldset style="border:0px" id="addrnew" disabled="true">
+									<table width="95%">
+										<tr><div class="p-t-5">
+											<td align="right" width="30%" class="p-r-5"><b>Province</b></td>
+											<td width="70%" height="30px">
+												<div class="bo4">
+													<input type="text" name="newprov" style="width:100%" class="p-l-5"></input>
+												</div>
+											</td>
+										</div></tr>
+										<tr>
+											<td align="right" class="p-r-5"><b>District</b></td>
+											<td height="30px">
+												<div class="bo4">
+													<input type="text" name="newdist" style="width:100%" class="p-l-5"></input>
+												</div>
+											</td>
+										</tr>
+										<tr>
+											<td align="right" class="p-r-5"><b>Sub-District</b></td>
+											<td height="30px">
+												<div class="bo4">
+													<input type="text" name="newsdist" style="width:100%" class="p-l-5"></input>
+												</div>
+											</td>
+										</tr>
+										<tr>
+											<td valign="top" align="right" class="p-t-5 p-r-5"><b>Address</b></td>
+											<td valign="center" height="150px">
+												<div class="bo4">
+													<textarea type="text" name="newaddr" style="width:100%; border:0px;" rows="5" class="p-l-5"></textarea>
+												</div>
+											</td>
+										</tr>
+										<tr>
+											<td align="right" class="p-r-5"><b>Zip Code</b></td>
+											<td height="30px"><div class="bo4"><input type="text" name="newzip" style="width:100%" class="p-l-5" maxlength="5"></input></div></td>
+										</tr>
+										<tr>
+											<td align="right" class="p-r-5"><b>Tel.</b></td>
+											<td height="30px"><div class="bo4"><input type="text" name="newtel" style="width:100%" class="p-l-5" maxlength="10"></input></div></td>
+											
+										</tr>
+										<tr>
+											<td colspan=2 class="p-l-15"><input type="checkbox" name="setaddr">Set to Default</td>
+										</tr>
+										<tr height="20px"><td></td></tr>
+									</table>
+								</fieldset>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+				
+				<br/>
+			
+			<div class="p-b-10">
+				<h2>Payment Method</h2>
+			</div>
+			
+			<div class="container-table-cart pos-relative">
+				<div class="wrap-table-shopping-cart bgwhite">
+					<table border=1 width="80%" style="max-width:1000px" class="table-shopping-cart2">
+						<fieldset id="thisispay" style="border:0px">
+						<tr>
+						
+							<td class="p-l-10">
+								<input onclick="pay3();" 
+										type="radio" name="radiopay" value="3" checked>&nbsp;PromptPay</input>
+							</td>
+
+							<td width="35%" valign="top" class="p-l-10" style="background-color: #888888;">
+								<input onclick="pay1();" 
+										type="radio" name="radiopay" value="1" disabled>&nbsp;Default (Coming Soon)</input>
+							</td>
+							<td width="35%" class="p-l-10" style="background-color: #888888;">
+								<input onclick="pay2();" 
+										type="radio" name="radiopay" value="2" disabled>&nbsp;New Payment Method (Coming Soon)</input>
+							</td>
+						
+							
+							
+						</tr>
+						</fieldset>
+						<tr>
+							<td align="center" width="20%">
+								<fieldset id="prompay" style="border:0px">
+									<div class="hovchar trans-0-4"><a onclick='document.getElementById("paybox").style.display="block"' >More Information</a></div>
+								</fieldset>
+							</td>
+							<td align="center" style="background-color: #888888;">
+								<fieldset id="payold" style="border:0px">
+									<table>
+										<tr>
+											<td align="right">Card NO. :</td>
+											<td><?php echo "&nbsp;".substr($dcardno,0,4)." - ".substr($dcardno,4,4)." - ".substr($dcardno,8,4)." - ".substr($dcardno,12,4);?></td>
+											<input type="hidden" name="hidden_cardno" value="<?php echo $dcardno;?>"></input>
+										</tr>
+										<tr>
+											<td colspan=2 align="center"><div class="mylinedivide1"></div></td>
+										</tr>
+										<tr>
+											<td align="right">Holder Name :</td>
+											<td><?php echo "&nbsp;".$dholder;?></td>
+											<input type="hidden" name="hidden_holder" value="<?php echo $dholder;?>"></input>
+										</tr>
+										<!--<tr>
+											<td align="right">EXP. Date :</td>
+											<td><textarea type="text" name="dcardexp" rows=1 cols=5 placeholder="mm/yy"></textarea></td>
+										</tr>
+										<tr>
+											<td valign="top" align="right">PIN :</td>
+											<td><textarea type="text" name="dcardpin" rows=1 cols=5 placeholder="XXX"></textarea></td>
+										</tr>-->
+									</table>
+								</fieldset>
+							</td>
+							<td style="background-color: #888888;">
+								<fieldset id="paynew" style="border:0px" disabled="true">
+									<table width="90%">
+										<tr height="30px">
+											<td align="right" width="30%">Card NO. :&nbsp;</td>
+											<td>
+												<div class="flex-l-m">
+													<div class="bo4 w-sizecredit">
+														<input class="p-l-3" style="width:100%" maxlength="4" type="text" name="cdnum1" placeholder="xxxx" required></input>
+													</div>
+													&nbsp;-&nbsp;
+													<div class="bo4 w-sizecredit">
+														<input class="p-l-3" style="width:100%" maxlength="4" type="text" name="cdnum2" placeholder="xxxx" required></input>
+													</div>
+													&nbsp;-&nbsp;
+													<div class="bo4 w-sizecredit">
+														<input class="p-l-3" style="width:100%" maxlength="4" type="text" name="cdnum3" placeholder="xxxx" required></input>
+													</div>
+													&nbsp;-&nbsp;
+													<div class="bo4 w-sizecredit">
+														<input class="p-l-3" style="width:100%" maxlength="4" type="text" name="cdnum4" placeholder="xxxx" required></input>
+													</div>
+												</div>
+											</td>
+										</tr>
+										<tr height="30px">
+											<td align="right" width="50%">Holder Name :&nbsp;</td>
+											<td><div class="bo4"><input type="text" name="holder" class="p-l-5" style="width:100%" placeholder="Full Name"></input></div></td>
+										</tr>
+										<!--<tr>
+											<td align="right">EXP. Date :</td>
+											<td><textarea type="text" name="cardexp" rows=1 cols=5 placeholder="mm/yy"></textarea></td>
+										</tr>
+										<tr>
+											<td valign="top" align="right">PIN :</td>
+											<td><textarea type="text" name="cardpin" rows=1 cols=5 placeholder="XXX"></textarea></td>
+										</tr>-->
+										<tr height="30px">
+											<td colspan=2 class="p-l-20"><input type="checkbox" name="setcard" id="testing">Set to Default</td>
+										</tr>
+									</table>
+								</fieldset>
+							</td>
+							
+						</tr>
+					</table>
+				</div>
+			</div>		
+			<br/>
+			
+			<table>
+				<tr>
+					<td width="100px" align="center"><button class="w-size1 flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" type="submit" name="submit">Submit</button></td>
+					<td width="30px"></td>
+					<td width="100px" align="center"><button class="w-size1 flex-c-m size4 bg7 bo-rad-15 hov1 s-text14 trans-0-4" type="button" onclick="window.history.back();">Back</button></td>
+					<!------------------------------------  WAITING FOR LINK ^^^^ ----------------------->
+				</tr>
+			</table><br/><br/>
+		</form>
+		</center>
+		
+		
+		
+		
+		<!--==========================================================================================-->
+		<!--==========================================================================================-->
+		
 
 	<!-- Footer -->
 	<footer class="bg6 p-t-45 p-b-43 p-l-45 p-r-45">
@@ -1184,7 +1207,7 @@
 					</li>
 
 					<li class="p-b-9">
-						<a href="contact.php" class="s-text7">
+						<a href="#" class="s-text7">
 							Contact Us
 						</a>
 					</li>
@@ -1253,15 +1276,23 @@
 
 		<div class="t-center p-l-15 p-r-15">
 			<a href="#">
-				<img class="h-size2s" src="images/icons/visa.png" alt="IMG-VISA">
+				<img class="h-size2" src="images/icons/paypal.png" alt="IMG-PAYPAL">
 			</a>
 
 			<a href="#">
-				<img class="h-size2s" src="images/icons/mastcard.png" alt="IMG-MASTERCARD">
+				<img class="h-size2" src="images/icons/visa.png" alt="IMG-VISA">
 			</a>
-			
+
 			<a href="#">
-				<img class="h-size2s" src="images/icons/prompay2.jpeg">
+				<img class="h-size2" src="images/icons/mastercard.png" alt="IMG-MASTERCARD">
+			</a>
+
+			<a href="#">
+				<img class="h-size2" src="images/icons/express.png" alt="IMG-EXPRESS">
+			</a>
+
+			<a href="#">
+				<img class="h-size2" src="images/icons/discover.png" alt="IMG-DISCOVER">
 			</a>
 
 			<div class="t-center s-text8 p-t-20">
@@ -1306,9 +1337,6 @@
 		});
 	</script>
 <!--===============================================================================================-->
-	<script type="text/javascript" src="vendor/daterangepicker/moment.min.js"></script>
-	<script type="text/javascript" src="vendor/daterangepicker/daterangepicker.js"></script>
-<!--===============================================================================================-->
 	<script type="text/javascript" src="vendor/slick/slick.min.js"></script>
 	<script type="text/javascript" src="js/slick-custom.js"></script>
 <!--===============================================================================================-->
@@ -1320,12 +1348,20 @@
 				swal(nameProduct, "is added to cart !", "success");
 			});
 		});
-		
-		/*$(document).ready(function(){
-			$("#addingcart").click(function(){
-				swal("This item ", "is added to cart !", "success");
+
+		$('.block2-btn-addwishlist').each(function(){
+			var nameProduct = $(this).parent().parent().parent().find('.block2-name').html();
+			$(this).on('click', function(){
+				swal(nameProduct, "is added to wishlist !", "success");
 			});
-		});*/
+		});
+
+		$('.btn-addcart-product-detail').each(function(){
+			var nameProduct = $('.product-detail-name').html();
+			$(this).on('click', function(){
+				swal(nameProduct, "is added to cart !", "success");
+			});
+		});
 		
 		function clickaddcart(findid,quantity){
 			var x = document.getElementById(findid).value;
@@ -1337,11 +1373,6 @@
 			}
 		}
 		
-		function clickaddsuccess(){
-			swal("SUCCESS", "This item is added to cart !", "success");
-		}
-		
-		
 		function clickaddfail(){
 			swal("This item ", "has been already added !", "error");
 		}
@@ -1350,52 +1381,54 @@
 			swal("Error", "This item is sold out !", "error");
 		}
 		
-
-		$('.block2-btn-addwishlist').each(function(){
-			var nameProduct = $(this).parent().parent().parent().find('.block2-name').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to wishlist !", "success");
-			});
-		});
 	</script>
 
 <!--===============================================================================================-->
-	<!--<script type="text/javascript" src="vendor/noui/nouislider.min.js"></script>
-	<script type="text/javascript">
-		/*[ No ui ]
-	    ===========================================================*/
-	    var filterBar = document.getElementById('filter-bar');
-
-	    noUiSlider.create(filterBar, {
-	        start: [ 30, 3000 ],
-	        connect: true,
-	        range: {
-	            'min': 30,
-	            'max': 3000
-	        }
-	    });
-
-	    var skipValues = [
-	    document.getElementById('value-lower'),
-	    document.getElementById('value-upper')
-	    ];
-
-	    filterBar.noUiSlider.on('update', function( values, handle ) {
-	        skipValues[handle].innerHTML = Math.round(values[handle]) ;
-	    });
-	</script>-->
-<!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script>
-		$(document).ready(function(){
-			$(this).click(function(){
-				if($(this).class == "item-pagination flex-c-m trans-0-4"){
-					$(this).toggleClass("item-pagination flex-c-m trans-0-4 active-pagination");
-				}
-			});
-		});
+	
+		var boxaddr = document.getElementById('addrnew')
 		
-		var mymodal = document.getElementById('loginbox');
+		function anew(){
+				boxaddr.disabled = false;
+			}
+			
+		function aold(){
+				boxaddr.disabled = true;
+			}
+		
+		var box1 = document.getElementById('payold');
+		var box2 = document.getElementById('paynew');
+		var box3 = document.getElementById('prompay');
+		
+			function fieldcheck1(input1,input2){
+				document.getElementById(input1).disabled = false;
+				document.getElementById(input2).disabled = true;
+			}
+			
+			function fieldcheck2(input1,input2){
+				document.getElementById(input1).disabled = true;
+				document.getElementById(input2).disabled = false;
+			}
+			
+			function pay1(){
+				box1.disabled = false;
+				box2.disabled = true;
+				box3.disabled = true;
+			}
+			
+			function pay2(){
+				box1.disabled = true;
+				box2.disabled = false;
+				box3.disabled = true;
+			}
+			
+			function pay3(){
+				box1.disabled = true;
+				box2.disabled = true;
+				box3.disabled = false;
+			}
+		var mymodal = document.getElementById('paybox');
 
 		
 		// When the user clicks anywhere outside of the modal, close it
@@ -1403,22 +1436,7 @@
 			if (event.target == mymodal) {
 				mymodal.style.display = "none";
 			}
-		}
-		
-		/*
-		window.onscroll = function() {myFunction()};
-		
-		var navmobile = document.getElementById("navmobile");
-		
-		var sticky = navmobile.offsetTop;
-
-		function myFunction() {
-		  if (window.pageYOffset >= sticky) {
-			navmobile.classList.add("sticky")
-		  } else {
-			navmobile.classList.remove("sticky");
-		  }
-		}*/
+		}		
 		
 	</script>
 

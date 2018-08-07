@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Home 03</title>
+	<title>9elan Co.,Ltd.</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->
@@ -43,8 +43,8 @@
 		<div class="container-menu-header-v3">
 			<div class="wrap_header3 p-t-74">
 				<!-- Logo -->
-				<a href="index.html" class="logo3">
-					<img src="myimages/mainlogo.png" alt="IMG-LOGO">
+				<a href="#" class="logo3">
+					<img src="myimages/mainlogo.png">
 				</a>
 
 				<!-- Header Icon -->
@@ -206,8 +206,8 @@
 		<!-- Header Mobile -->
 		<div class="wrap_header_mobile">
 			<!-- Logo moblie -->
-			<a href="index.html" class="logo-mobile">
-				<img src="images/icons/logo.png" alt="IMG-LOGO">
+			<a href="#" class="logo-mobile">
+				<img src="myimages/mainlogo.png">
 			</a>
 
 			<!-- Button show menu -->
@@ -433,7 +433,7 @@
 	<section class="slide1 rs1-slick1">
 		<div class="wrap-slick1">
 			<div class="slick1">
-				<div class="item-slick1 item1-slick1" style="background-image: url(myimages/bgad.jpg);">
+				<div class="item-slick1 item1-slick1" style="background-image: url(myimages/mylogo.png);">
 					<div class="wrap-content-slide1 size24 flex-col-c-m p-l-15 p-r-15 p-t-120 p-b-170">
 						<h2 class="caption1-slide1 xl-text3 t-center bo15 p-b-3 animated visible-false m-b-25" data-appear="fadeInUp">
 							Adenoscence

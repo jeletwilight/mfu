@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 16, 2018 at 11:18 AM
+-- Generation Time: Jul 18, 2018 at 06:38 AM
 -- Server version: 10.1.32-MariaDB
 -- PHP Version: 7.2.5
 
@@ -73,6 +73,7 @@ CREATE TABLE `creditcard` (
 --
 
 INSERT INTO `creditcard` (`id`, `user_id`, `holder_name`, `cardnumber`, `exp`, `expyear`, `expmonth`, `pin`, `current`) VALUES
+(0, 2, '', '', '', '', '', '', 0),
 (1, 1, 'Tester Testing', '0102030405060708', '12/13', '2019', '12', '141', 1),
 (2, 7, 'holder is tester', '1111111111111111', '01/13', '2018', '04', '123', 1),
 (3, 2, 'Admin isHolder', '4685431358587474', '', '', '', '', 1);
@@ -97,7 +98,12 @@ CREATE TABLE `lineitems` (
 
 INSERT INTO `lineitems` (`id`, `receipt_id`, `product_id`, `quantity`, `lineprice`) VALUES
 (16, 11, 2, 1, 300),
-(28, 16, 2, 2, 600);
+(28, 16, 2, 2, 600),
+(29, 19, 38, 1, 20000),
+(30, 20, 42, 1, 100),
+(31, 20, 32, 2, 29994),
+(32, 20, 40, 3, 900),
+(33, 20, 39, 4, 200);
 
 -- --------------------------------------------------------
 
@@ -154,15 +160,15 @@ CREATE TABLE `product` (
 
 INSERT INTO `product` (`id`, `name`, `instock`, `price`, `sale`, `currentprice`, `information`, `imgname`, `image`, `released`) VALUES
 (2, 'Perfume', 90, 300, 0, 300, 'test', 'PF1.png', 0x433a5c78616d70705c746d705c706870363134382e746d70, '2018-06-04 06:09:05'),
-(32, 'PF2', 2, 20000, 14997, 14997, '', 'PF2.jpg', 0x433a5c78616d70705c746d705c706870443839302e746d70, '2018-06-24 17:00:00'),
+(32, 'PF2', 0, 20000, 14997, 14997, '', 'PF2.jpg', 0x433a5c78616d70705c746d705c706870443839302e746d70, '2018-06-24 17:00:00'),
 (35, 'PF3', 10, 1000, 500, 500, '', 'PF3.jpg', 0x433a5c78616d70705c746d705c706870344338372e746d70, '2018-06-24 17:00:00'),
 (36, 'PF4', 7, 7000, 0, 7000, '', 'PF4.jpg', 0x433a5c78616d70705c746d705c706870343038442e746d70, '2018-06-24 17:00:00'),
 (37, 'PF5', 4, 4000, 0, 4000, '', 'PF5.jpg', 0x433a5c78616d70705c746d705c706870374530342e746d70, '2018-06-24 17:00:00'),
-(38, 'PF6', 50, 20000, 0, 20000, '', 'PF6.jpg', 0x433a5c78616d70705c746d705c706870363238392e746d70, '2018-06-24 17:00:00'),
-(39, 'PF7', 50, 50, 0, 50, '', 'PF7.jpg', 0x433a5c78616d70705c746d705c706870423841342e746d70, '2018-06-24 17:00:00'),
-(40, 'PF8', 50, 300, 0, 300, '', 'PF8.jpg', 0x433a5c78616d70705c746d705c706870443144352e746d70, '2018-06-24 17:00:00'),
+(38, 'PF6', 49, 20000, 0, 20000, '', 'PF6.jpg', 0x433a5c78616d70705c746d705c706870363238392e746d70, '2018-06-24 17:00:00'),
+(39, 'PF7', 46, 50, 0, 50, '', 'PF7.jpg', 0x433a5c78616d70705c746d705c706870423841342e746d70, '2018-06-24 17:00:00'),
+(40, 'PF8', 47, 300, 0, 300, '', 'PF8.jpg', 0x433a5c78616d70705c746d705c706870443144352e746d70, '2018-06-24 17:00:00'),
 (41, 'PF9', 0, 900, 0, 900, '', 'PF9.jpg', 0x433a5c78616d70705c746d705c7068703834382e746d70, '2018-06-24 17:00:00'),
-(42, 'PF10', 50, 100, 0, 100, '', 'PF10.jpg', 0x433a5c78616d70705c746d705c706870354135312e746d70, '2018-06-24 17:00:00'),
+(42, 'PF10', 49, 100, 0, 100, '', 'PF10.jpg', 0x433a5c78616d70705c746d705c706870354135312e746d70, '2018-06-24 17:00:00'),
 (43, 'PF11', 50, 77777, 0, 77777, '', 'PF11.jpg', 0x433a5c78616d70705c746d705c706870413233382e746d70, '2018-06-24 17:00:00'),
 (44, 'PF12', 50, 6500, 0, 6500, '', 'PF12.jpg', 0x433a5c78616d70705c746d705c706870453046382e746d70, '2018-06-24 17:00:00'),
 (45, 'PF13', 50, 900, 0, 900, '', 'PF13.jpg', 0x433a5c78616d70705c746d705c706870313645442e746d70, '2018-06-24 17:00:00'),
@@ -183,18 +189,21 @@ CREATE TABLE `receipt` (
   `subtotal` float NOT NULL,
   `note` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
   `producted` tinyint(1) NOT NULL,
-  `status` int(2) NOT NULL
+  `status` int(2) NOT NULL,
+  `method` int(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `receipt`
 --
 
-INSERT INTO `receipt` (`id`, `user_id`, `address_id`, `payment_id`, `subtotal`, `note`, `producted`, `status`) VALUES
-(11, 1, 1, 1, 25300, '', 1, 1),
-(14, 7, 4, 2, 50000, '', 1, 0),
-(16, 1, 1, 1, 144725, '', 1, 1),
-(18, 1, 1, 1, 278025, '', 1, 0);
+INSERT INTO `receipt` (`id`, `user_id`, `address_id`, `payment_id`, `subtotal`, `note`, `producted`, `status`, `method`) VALUES
+(11, 1, 1, 1, 25300, '', 1, 1, 0),
+(14, 7, 4, 2, 50000, '', 1, 0, 0),
+(16, 1, 1, 1, 144725, '', 1, 1, 0),
+(18, 1, 1, 1, 278025, '', 1, 0, 0),
+(19, 1, 1, 1, 20000, '', 1, 0, 0),
+(20, 1, 1, 1, 31194, '', 1, 0, 0);
 
 --
 -- Indexes for dumped tables
@@ -263,7 +272,7 @@ ALTER TABLE `creditcard`
 -- AUTO_INCREMENT for table `lineitems`
 --
 ALTER TABLE `lineitems`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `login`
@@ -281,7 +290,7 @@ ALTER TABLE `product`
 -- AUTO_INCREMENT for table `receipt`
 --
 ALTER TABLE `receipt`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- Constraints for dumped tables

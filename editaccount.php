@@ -1,5 +1,11 @@
 <?php
-	$con = mysqli_connect("localhost","root","","mfu");
+	$host = "localhost";
+	$usr = "root";
+	$pw = "";
+	$db = "mfu";
+	$port = "";
+
+	$con = mysqli_connect($host, $usr, $pw, $db);
 	
 	if($con === false){
 		die("ERROR: Could not connect." . mysqli_connect_error());
@@ -81,8 +87,8 @@
 		}else{
 			$qry = "UPDATE login SET name='$name', telephone='$telephone', other='$other' WHERE id='$lgid'";
 			if(mysqli_query($con,$qry)){
-				echo "<script>alert('Update Success')</script>";
-				echo "<script>window.location='/mfu/products.php'</script>";
+				echo "<script>alert('Update Profile Success')</script>";
+				echo "<script>window.history.back();</script>";
 			}
 		}
 		
@@ -104,7 +110,7 @@
 			$qry2 = "INSERT INTO address VALUES ('','$lgid','$location','$subdist','$district','$province','$zipcode','$teladdr','1')";
 			if(mysqli_query($con, $qry2)){
 				echo "<script>alert('Changed Default Address')</script>";
-				echo "<script>window.location='/mfu/products.php'</script>";
+				echo "<script>window.history.back();</script>";
 			}
 		}
 	}
@@ -128,7 +134,7 @@
 			}
 			if(mysqli_query($con,$qry2)){
 				echo "<script>alert('Changed Default Payment')</script>";
-				echo "<script>window.location='/mfu/products.php'</script>";
+				echo "<script>window.history.back();</script>";
 			}
 		}
 	}
@@ -141,7 +147,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Edit Product</title>
+	<title>Edit Account</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->
@@ -179,27 +185,28 @@
 		<div class="container-menu-header">
 			<div class="topbar">
 				<div class="topbar-social">
-					<a href="#" class="topbar-social-item fa fa-facebook"></a>
+					<a href="/mfu/home.php" class="topbar-social-item">9elan Co.,Ltd.</a>
+					<!--<a href="#" class="topbar-social-item fa fa-facebook"></a>
 					<a href="#" class="topbar-social-item fa fa-instagram"></a>
 					<a href="#" class="topbar-social-item fa fa-pinterest-p"></a>
 					<a href="#" class="topbar-social-item fa fa-snapchat-ghost"></a>
-					<a href="#" class="topbar-social-item fa fa-youtube-play"></a>
+					<a href="#" class="topbar-social-item fa fa-youtube-play"></a>-->
 				</div>
 
 				<span class="topbar-child1">
-					Free shipping for standard order over $100
+					Free shipping for standard order over ฿300
 				</span>
 
 				<div class="topbar-child2">
 					<span class="topbar-email">
-						fashe@example.com
+						9elan.company@gmail.com
 					</span>
 				</div>
 			</div>
 
 			<div class="wrap_header">
 				<!-- Logo -->
-				<a href="home.php" class="logo">
+				<a href="#" class="logo">
 					<img src="/mfu/myimages/mylogo.png">
 				</a>
 
@@ -216,20 +223,20 @@
 								<a href="products.php">Shop</a>
 							</li>
 
-							<li>
+							<!--<li>
 								<a href="cart.html">Cart</a>
+							</li>-->
+
+							<li>
+								<a href="blog.html">News</a>
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="about.html">About us</a>
 							</li>
 
 							<li>
-								<a href="about.html">About</a>
-							</li>
-
-							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
 					</nav>
@@ -322,10 +329,13 @@
 						<img src="images/icons/icon-header-01.png" class="header-icon1" alt="ICON" onclick='document.getElementById("loginbox").style.display="block"'>
 					</a>
 					<?php endif;?>
+					
+					
 
 					<?php
 						if(in_array($_SESSION['c'],$addproducttocart)):
 					?>
+					
 					<span class="linedivide1"></span>
 
 					<div class="header-wrapicon2">
@@ -338,6 +348,13 @@
 
 						<!-- Header cart noti -->
 						<div class="header-cart header-dropdown">
+									<li class="header-cart-wrapitem header-cart-item">
+										<div class="header-cart-item-mytxt">	
+											<center>
+												<b class="m-text14">MY CART</b>
+											</center>
+										</div>
+									</li>
 							<?php if(!empty($_SESSION["shopping_cart"])):?>
 								<ul class="header-cart-wrapitem">
 									<?php 	$total = 0;
@@ -349,7 +366,7 @@
 											</div>
 
 											<div class="header-cart-item-txt">
-												<a href="#" class="header-cart-item-name">
+												<a href="/mfu/productdetail.php?id=<?php echo $values["item_id"];?>" class="header-cart-item-name">
 													<?php echo $values["item_name"];?>
 												</a>
 
@@ -370,20 +387,20 @@
 									<div class="header-cart-wrapbtn">
 										<!-- Button -->
 										<a href="/mfu/products.php?action=deleteall" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
-											Delete All
+											Clear Cart
 										</a>
 									</div>
 
 									<div class="header-cart-wrapbtn">
 										<!-- Button -->
-										<a href="#" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+										<a href="/mfu/payment.php" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
 											Check Out
 										</a>
 									</div>
 								</div>
 							<?php else:?>
 								<a class="header-cart-item-name">
-									No item in cart
+									No item
 								</a>
 							<?php endif;?>
 						</div>
@@ -393,279 +410,543 @@
 			</div>
 		</div>
 
-		<!-- Header Mobile -->
-		<div class="wrap_header_mobile">
-			<!-- Logo moblie -->
-			<a href="index.html" class="logo-mobile">
-				<img src="images/icons/logo.png" alt="IMG-LOGO">
-			</a>
+		<div>
+			<!-- Header Mobile -->
+			<div class="wrap_header_mobile">
+				<!-- Logo moblie -->
+				<a href="#" class="logo-mobile">
+					<img src="/mfu/myimages/mylogo.png">
+				</a>
 
-			<!-- Button show menu -->
-			<div class="btn-show-menu">
-				<!-- Header Icon mobile -->
-				<div class="header-icons-mobile">
-					<a href="#" class="header-wrapicon1 dis-block">
-						<img src="images/icons/icon-header-01.png" class="header-icon1" alt="ICON">
-					</a>
-
-					<span class="linedivide2"></span>
-
-					<div class="header-wrapicon2">
-						<img src="images/icons/icon-header-02.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
-						<span class="header-icons-noti">0</span>
-
-						<!-- Header cart noti -->
+				<!-- Button show menu -->
+				<div class="btn-show-menu">
+					<!-- Header Icon mobile -->
+					<div class="header-icons-mobile">
+						<?php 
+						if($_SESSION['login']!='GUEST' && $_SESSION['c']>6):
+					?>
+					<div class="header-wrapicon1">
+						<img src="images/icons/icon-header-01.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
 						<div class="header-cart header-dropdown">
 							<ul class="header-cart-wrapitem">
 								<li class="header-cart-item">
-									<div class="header-cart-item-img">
-										<img src="images/item-cart-01.jpg" alt="IMG">
-									</div>
-
-									<div class="header-cart-item-txt">
-										<a href="#" class="header-cart-item-name">
-											White Shirt With Pleat Detail Back
-										</a>
-
-										<span class="header-cart-item-info">
-											1 x $19.00
-										</span>
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<b class="m-text14">MY ACCOUNT</b>
+										</center>
 									</div>
 								</li>
-
+								
 								<li class="header-cart-item">
-									<div class="header-cart-item-img">
-										<img src="images/item-cart-02.jpg" alt="IMG">
-									</div>
-
-									<div class="header-cart-item-txt">
-										<a href="#" class="header-cart-item-name">
-											Converse All Star Hi Black Canvas
-										</a>
-
-										<span class="header-cart-item-info">
-											1 x $39.00
-										</span>
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<a>Account : <?php echo $_SESSION['login'];?></a>
+										</center>
 									</div>
 								</li>
-
+								
 								<li class="header-cart-item">
-									<div class="header-cart-item-img">
-										<img src="images/item-cart-03.jpg" alt="IMG">
-									</div>
-
-									<div class="header-cart-item-txt">
-										<a href="#" class="header-cart-item-name">
-											Nixon Porter Leather Watch In Tan
-										</a>
-
-										<span class="header-cart-item-info">
-											1 x $17.00
-										</span>
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/products.php?action=logout" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												LOG OUT
+											</a>
+										</center>
 									</div>
 								</li>
 							</ul>
-
-							<div class="header-cart-total">
-								Total: $75.00
-							</div>
-
-							<div class="header-cart-buttons">
-								<div class="header-cart-wrapbtn">
-									<!-- Button -->
-									<a href="cart.html" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
-										View Cart
-									</a>
-								</div>
-
-								<div class="header-cart-wrapbtn">
-									<!-- Button -->
-									<a href="#" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
-										Check Out
-									</a>
-								</div>
-							</div>
 						</div>
 					</div>
-				</div>
+					<?php 
+						elseif($_SESSION['login']!='GUEST' && $_SESSION['c']!='0'):	
+					?>
+					<div class="header-wrapicon1">
+						<img src="images/icons/icon-header-01.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
+						<div class="header-cart header-dropdown">
+							<ul class="header-cart-wrapitem">
 
-				<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
-					<span class="hamburger-box">
-						<span class="hamburger-inner"></span>
-					</span>
-				</div>
-			</div>
-		</div>
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<b class="m-text14">MY ACCOUNT</b>
+										</center>
+									</div>
+								</li>
+								
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<a>Account : <?php echo $_SESSION['login'];?></a>
+										</center>
+									</div>
+								</li>
+								
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/customerorder.php" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												ORDER HISTORY
+											</a>
+										</center>
+									</div>
+								</li>
 
-		<!-- Menu Mobile -->
-		<div class="wrap-side-menu" >
-			<nav class="side-menu">
-				<ul class="main-menu">
-					<li class="item-topbar-mobile p-l-20 p-t-8 p-b-8">
-						<span class="topbar-child1">
-							Free shipping for standard order over $100
-						</span>
-					</li>
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/editaccount.php" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												EDIT ACCOUNT
+											</a>
+										</center>
+									</div>
+								</li>
 
-					<li class="item-topbar-mobile p-l-20 p-t-8 p-b-8">
-						<div class="topbar-child2-mobile">
-							<span class="topbar-email">
-								fashe@example.com
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/products.php?action=logout" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												LOG OUT
+											</a>
+										</center>
+									</div>
+								</li>
+								
+							</ul>
+						</div>
+					</div>
+					<?php
+						else:
+					?>
+					<a class="header-wrapicon1 dis-block">
+						<img src="images/icons/icon-header-01.png" class="header-icon1" alt="ICON" onclick='document.getElementById("loginbox").style.display="block"'>
+					</a>
+					<?php endif;?>
+
+						<?php
+							if(in_array($_SESSION['c'],$addproducttocart)):
+						?>
+						
+						<span class="linedivide2"></span>
+
+						<div class="header-wrapicon2">
+							<img src="images/icons/icon-header-02.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
+							<span class="header-icons-noti"><?php 
+																	if(isset($_SESSION['shopping_cart']))echo count($_SESSION['shopping_cart']);
+																	else echo "0";
+															?>
 							</span>
 
-							<div class="topbar-language rs1-select2">
-								<select class="selection-1" name="time">
-									<option>USD</option>
-									<option>EUR</option>
-								</select>
+							<!-- Header cart noti -->
+							<div class="header-cart header-dropdown">
+										<li class="header-cart-wrapitem header-cart-item">
+											<div class="header-cart-item-mytxt">	
+												<center>
+													<b class="m-text14">MY CART</b>
+												</center>
+											</div>
+										</li>
+								<?php if(!empty($_SESSION["shopping_cart"])):?>
+									<ul class="header-cart-wrapitem">
+										<?php 	$total = 0;
+												foreach($_SESSION['shopping_cart'] as $key => $values):
+										?>
+											<li class="header-cart-item">
+												<div class="header-cart-item-img" onclick="location.href='/mfu/products.php?action=delete&id=<?php echo $values["item_id"];?>';">
+													<img src="/mfu/productimages/<?php echo $values['item_img'];?>">
+												</div>
+
+												<div class="header-cart-item-txt">
+													<a href="/mfu/productdetail.php?id=<?php echo $values['item_id'];?>" class="header-cart-item-name">
+														<?php echo $values["item_name"];?>
+													</a>
+
+													<span class="header-cart-item-info">
+														<?php echo $values["item_quantity"];?> x ฿ <?php echo number_format($values["item_price"]);?> 
+														= ฿ <?php echo number_format($values["item_quantity"] * $values["item_price"]);?>
+													</span>
+												</div>
+											</li>
+										<?php 	$total = $total + ($values["item_quantity"] * $values["item_price"]);
+												endforeach;
+										?>
+									</ul>
+									<div class="header-cart-total">
+										Total: ฿ <?php echo number_format($total);?>
+									</div>
+									<div class="header-cart-buttons">
+										<div class="header-cart-wrapbtn">
+											<!-- Button -->
+											<a href="/mfu/products.php?action=deleteall" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												Clear Cart
+											</a>
+										</div>
+
+										<div class="header-cart-wrapbtn">
+											<!-- Button -->
+											<a href="/mfu/payment.php" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												Check Out
+											</a>
+										</div>
+									</div>
+								<?php else:?>
+									<a class="header-cart-item-name">
+										No item
+									</a>
+								<?php endif;?>
 							</div>
 						</div>
-					</li>
+						<?php endif;?>
+					</div>
 
-					<li class="item-topbar-mobile p-l-10">
-						<div class="topbar-social-mobile">
-							<a href="#" class="topbar-social-item fa fa-facebook"></a>
-							<a href="#" class="topbar-social-item fa fa-instagram"></a>
-							<a href="#" class="topbar-social-item fa fa-pinterest-p"></a>
-							<a href="#" class="topbar-social-item fa fa-snapchat-ghost"></a>
-							<a href="#" class="topbar-social-item fa fa-youtube-play"></a>
-						</div>
-					</li>
+					<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
+						<span class="hamburger-box">
+							<span class="hamburger-inner"></span>
+						</span>
+					</div>
+				</div>
+			</div>
 
-					<li class="item-menu-mobile">
-						<a href="index.html">Home</a>
-						<ul class="sub-menu">
-							<li><a href="index.html">Homepage V1</a></li>
-							<li><a href="home-02.html">Homepage V2</a></li>
-							<li><a href="home-03.html">Homepage V3</a></li>
-						</ul>
-						<i class="arrow-main-menu fa fa-angle-right" aria-hidden="true"></i>
-					</li>
+			<!-- Menu Mobile -->
+			<div class="wrap-side-menu">
+				<nav class="side-menu">
+					<ul class="main-menu">
+						<li class="item-topbar-mobile p-l-20 p-t-8 p-b-8">
+							<span class="topbar-child1">
+								Free shipping for standard order over $100
+							</span>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="product.html">Shop</a>
-					</li>
+						<li class="item-topbar-mobile p-l-20 p-t-8 p-b-8">
+							<div class="topbar-child2-mobile">
+								<span class="topbar-email">
+									9elan.company@gmail.com
+								</span>
+							</div>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="product.html">Sale</a>
-					</li>
+						<li class="item-topbar-mobile p-l-10">
+							<div class="topbar-social-mobile">
+								<a href="#" class="topbar-social-item fa fa-facebook"></a>
+								<a href="#" class="topbar-social-item fa fa-instagram"></a>
+								<a href="#" class="topbar-social-item fa fa-pinterest-p"></a>
+								<a href="#" class="topbar-social-item fa fa-snapchat-ghost"></a>
+								<a href="#" class="topbar-social-item fa fa-youtube-play"></a>
+							</div>
+						</li>
+						
+						
+						<li class="item-menu-mobile">
+							<a href="Home.php">Home</a>
+						</li>
+						
+						<li class="item-menu-mobile">
+							<a href="products.php">Shop</a>
+							<ul class="sub-menu">
+								<li><a href="products.php">Adenoscence</a></li>
+								<li><a href="products.php">Shop2</a></li>
+								<li><a href="products.php">Shop3</a></li>
+							</ul>
+							<i class="arrow-main-menu fa fa-angle-right" aria-hidden="true"></i>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="cart.html">Features</a>
-					</li>
+						<!--<li class="item-menu-mobile">
+							<a href="cart.html">Cart</a>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="blog.html">Blog</a>
-					</li>
+						<li class="item-menu-mobile">
+							<a href="blog.html">Blog</a>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="about.html">About</a>
-					</li>
+						<li class="item-menu-mobile">
+							<a href="about.html">About</a>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="contact.html">Contact</a>
-					</li>
-				</ul>
-			</nav>
+						<li class="item-menu-mobile">
+							<a href="contact.html">Contact</a>
+						</li>-->
+					</ul>
+				</nav>
+			</div>
 		</div>
 	</header>
+	
+	<div id="profilebox" class="mymodal">
+		<form method="post" action="" class="mymodal-content myanimate">
+			<div class="newcontainer">
+				<p align="right" style="position:relative">
+					<span onclick="document.getElementById('profilebox').style.display='none'" class="myclose" title="Close">&times;</span>
+				</p>
+				<center>
+					<br/>
+					<font size="11">
+						<b>Edit Profile</b>
+					</font>
+					<br/>
+					<table width="90%">
+						<tr height="40px">
+							<td align="right" class="p-r-5" width="20%">Fullname :</td>
+							<td>
+								<div class="bo4">
+								<input style="width:100%" class="p-l-5" type="text" name="fullname" placeholder="Example: Tester Numberone" value="<?php echo $oldname;?>" required></input>
+								</div>
+							</td>
+						</tr>
+						<tr height="40px">
+							<td align="right" class="p-r-5">Tel. :</td>
+							<td>
+								<div class="bo4">
+									<input style="width:100%" class="p-l-5 bo4" type="text" name="tel" placeholder="Example: 0812345678" value="<?php echo $oldtelephone;?>" required></input>
+								</div>
+							</td>
+						</tr>
+						<tr height="40px">
+							<td align="right" class="p-r-5">Other :</td>
+							<td>
+								<div class="bo4">
+									<input style="width:100%" class="p-l-5 bo4" type="text" name="other" placeholder="Example: LineID=userline,Facebook=John Doe" value="<?php echo $oldother;?>"></input>
+								</div>
+							</td>
+						</tr>
+						<tr><td height="10"/></tr>	
+					</table>
+					<table>
+						<tr>
+							<td width="70%" style="max-width:300px" align="center"><button class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4" type="submit" name="submitprofile">Submit</button></td>
+						</tr>
+					</table>
+					<br/>
+				</center>
+			</div>
+		</form>
+	</div>
+	
+	<div id="addressbox" class="mymodal">
+		<form method="post" action="" class="mymodal-content myanimate">
+			<div class="newcontainer">
+				<p align="right" style="position:relative">
+					<span onclick="document.getElementById('addressbox').style.display='none'" class="myclose" title="Close">&times;</span>
+				</p>
+				<center>
+					<br/>
+					<font size="11">
+						<b>Edit Address<b>
+					</font>
+					<br/>
+					<table width="90%">
+						<tr height="40px">
+							<td align="right" class="p-r-5" width="35%">Address :</td>
+							<td>
+								<div class="bo4">
+									<input class="p-l-5" style="width:100%" type="text" name="addr" placeholder="Example: 123/1 Moo.1" value="<?php echo $oldlocation;?>" required></input>
+								<div>
+							</td>
+						</tr>
+						<tr height="40px">
+							<td align="right" class="p-r-5">Province :</td>
+							<td>
+								<div class="bo4">
+									<input class="p-l-5" style="width:100%" type="text" name="prov" placeholder="Example: Chiang Rai" value="<?php echo $oldprovince;?>" required></input>
+								<div>
+							</td>
+						</tr>
+						<tr height="40px">
+							<td align="right" class="p-r-5">District :</td>
+							<td>
+								<div class="bo4">
+									<input class="p-l-5" style="width:100%" type="text" name="dist" placeholder="Example: Mae Sai" value="<?php echo $olddist;?>" required></input>
+								<div>
+							</td>
+						</tr>
+						<tr height="40px">
+							<td align="right" class="p-r-5">Sub-District :</td>
+							<td>
+								<div class="bo4">
+									<input class="p-l-5" style="width:100%" type="text" name="sdist" placeholder="Example: Huai Khrai" value="<?php echo $oldsubdist;?>" required></input>
+								<div>
+							</td>
+						</tr>
+						<tr height="40px">
+							<td align="right" class="p-r-5">Zip Code :</td>
+							<td>
+								<div class="bo4">
+									<input class="p-l-5" style="width:100%" type="text" name="zip" placeholder="Example: 57000" value="<?php echo $oldzip;?>" required></input>
+								<div>
+							</td>
+						</tr>
+						<tr height="40px">
+							<td align="right" class="p-r-5">Tel. (For Shipping) :</td>
+							<td>
+								<div class="bo4">
+								<input class="p-l-5" style="width:100%" type="text" name="teladdr" placeholder="Example: 0801234567" value="<?php echo $oldteladdr;?>" required></input>
+							</td>
+						</tr><td height="10"/></tr>	
+					</table>
+					<table>
+						<tr>
+							<td width="70%" style="max-width:300px" align="center"><button class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4" type="submit" name="submitaddr">Submit</button></td>
+						</tr>
+					</table>
+					<br/>
+				</center>
+			</div>
+		</form>
+	</div>
+	
+	<div id="paybox" class="mymodal">
+		<form method="post" action="" class="mymodal-content myanimate">
+			<div class="newcontainer">
+				<p align="right" style="position:relative">
+					<span onclick="document.getElementById('paybox').style.display='none'" class="myclose" title="Close">&times;</span>
+				</p>
+				<center>
+					<br/>
+					<font size="11">
+							<b>Edit Payment</b>
+					</font>
+					<br/>
+					<table width="90%">
+						<tr height="40px">
+							<td align="right" class="p-r-5" width="30%">Holder name : </td>
+							<td>
+								<div class="bo4">
+									<input class="p-l-5" style="width:100%" type="text" name="holder" placeholder="Full Name" value="<?php echo $resultpay['holder_name'];?>" required></input>
+								</div>
+							</td>
+						</tr>
+						<tr height="40px">
+							<td align="right" class="p-r-5">Card Number : </td>
+							<td>
+								<div class="flex-l-m">
+									<div class="bo4 w-sizecredit">
+										<input class="p-l-3" style="width:100%" maxlength="4" type="text" name="cdnum1" placeholder="xxxx" value="<?php echo substr($resultpay['cardnumber'],0,4);?>" required></input>
+									</div>&nbsp;-&nbsp;
+									<div class="bo4 w-sizecredit">
+										<input class="p-l-3" style="width:100%" maxlength="4" type="text" name="cdnum2" placeholder="xxxx" value="<?php echo substr($resultpay['cardnumber'],4,4);?>" required></input>
+									</div>&nbsp;-&nbsp;
+									<div class="bo4 w-sizecredit">
+										<input class="p-l-3" style="width:100%" maxlength="4" type="text" name="cdnum3" placeholder="xxxx" value="<?php echo substr($resultpay['cardnumber'],8,4);?>" required></input>
+									</div>&nbsp;-&nbsp;
+									<div class="bo4 w-sizecredit">
+										<input class="p-l-3" style="width:100%" maxlength="4" type="text" name="cdnum4" placeholder="xxxx" value="<?php echo substr($resultpay['cardnumber'],12,4);?>" required></input>
+									</div>
+								</div>
+							</td>
+						</tr>
+					</table>
+					<br/>
+					<table>
+						<tr>
+							<td width="70%" style="max-width:300px" align="center"><button class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4" type="submit" name="submitpay">Submit</button></td>
+						</tr>
+					</table>
+					<br/>
+				</center>
+			</div>
+		</form>
+	</div>
+	
 
 
 	<!-- Edit Account -->
 	<center>
 	<div class="p-t-20 p-b-30">
-		<h1>Edit Account</h1>
+		<h1><b>Edit Account</b></h1>
+		<br/>
 		<h5>Account : <?php echo $usrname;?></h5>
 	</div>
 	<div class="p-b-10">
 		<h2>Profile</h2>
 	</div>
-	<table>
-			<form id="form2" method="post" action="">
+	
+	<div class="graycontainer">
+		<table width="100%">
 			<tr>
-				<td align="right" valign="top" class="p-r-5">Fullname :</td>
-				<td><textarea class="p-l-5" rows="1" cols="60" type="text" name="fullname" placeholder="Example: Tester Numberone" required><?php echo $oldname;?></textarea></td>
+				<td align="right" class="p-r-5" width="40%">Fullname :</td>
+				<td><?php echo $oldname;?></td>
 			</tr>
 			<tr>
-				<td align="right" valign="top" class="p-r-5">Tel. :</td>
-				<td><textarea class="p-l-5" rows="1" cols="60" type="text" name="tel" placeholder="Example: 0812345678" required><?php echo $oldtelephone;?></textarea></td>
+				<td align="right" class="p-r-5">Tel. :</td>
+				<td><?php echo substr($oldtelephone,0,3)." - ".substr($oldtelephone,3,3)." - ".substr($oldtelephone,6,4);?></td>
 			</tr>
 			<tr>
-				<td align="right" valign="top" class="p-r-5">Other :</td>
-				<td><textarea class="p-l-5" rows="1" cols="60" type="text" name="other" placeholder="Example: LineID=userline,Facebook=John Doe"><?php echo $oldother;?></textarea></td>
+				<td align="right" class="p-r-5">Other :</td>
+				<td><?php if($oldother!=null)echo $oldother;else echo "No Information";?></td>
 			</tr>
 			<tr><td height="10"/></tr>	
 		</table>
+		<button onclick='document.getElementById("profilebox").style.display="block"' class="flex-c-m bg4 bo-rad-23 hov1 s-text1 trans-0-4" style="width:5%; height:40px; min-width:60px;">
+			Edit
+		</button>
+	</div>
+	
+	<br/><br/>
+	
+	<div class="p-b-10">	
+		<h2>Default Address</h2>
+	</div>
+	<div class="graycontainer">
 		<table>
 			<tr>
-				<td width="70%" style="max-width:300px" align="center"><button class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4" type="submit" name="submitprofile">Submit</button></td>
-				<!------------------------------------  WAITING FOR LINK ^^^^ ----------------------->
+				<td align="right" class="p-r-5" width="40%">Address :</td>
+				<td><?php if($oldlocation!=null)echo $oldlocation;else echo "No Information";?></td>
 			</tr>
-			</form>
+			<tr>
+				<td align="right" class="p-r-5">Province :</td>
+				<td><?php if($oldprovince!=null)echo $oldprovince;else echo "No Information";?></td>
+			</tr>
+			<tr>
+				<td align="right" class="p-r-5">District :</td>
+				<td><?php if($olddist!=null)echo $olddist;else echo "No Information";?></td>
+			</tr>
+			<tr>
+				<td align="right" class="p-r-5">Sub-District :</td>
+				<td><?php if($oldsubdist!=null)echo $oldsubdist;else echo "No Information";?></td>
+			</tr>
+			<tr>
+				<td align="right" class="p-r-5">Zip Code :</td>
+				<td><?php if($oldzip!=null)echo $oldzip;else echo "No Information";?></td>
+			</tr>
+			<tr>
+				<td align="right" class="p-r-5">Tel. (For Shipping) :</td>
+				<td><?php if($oldteladdr!=null)echo substr($oldteladdr,0,3)." - ".substr($oldteladdr,3,3)." - ".substr($oldteladdr,6,4);else echo "No Information";?></td>
+			</tr>
+			<tr><td height="10"/></tr>	
 		</table>
+		<button onclick='document.getElementById("addressbox").style.display="block"' class="flex-c-m bg4 bo-rad-23 hov1 s-text1 trans-0-4" style="width:5%; height:40px; min-width:60px;">
+			Edit
+		</button>
+	</div>
+		
 		<br/><br/>
-		<h2>Address</h2>
-		<br/>
-		<table>
-			<form id="form1" method="post" action="">
-			<tr>
-				<td align="right" valign="top" class="p-r-5">Address :</td>
-				<td><textarea class="p-l-5" rows="1" cols="60" type="text" name="addr" placeholder="Example: 123/1 Moo.1" required><?php echo $oldlocation;?></textarea></td>
-			</tr>
-			<tr>
-				<td align="right" valign="top" class="p-r-5">Province :</td>
-				<td><textarea class="p-l-5" rows="1" cols="60" type="text" name="prov" placeholder="Example: Chiang Rai" required><?php echo $oldprovince;?></textarea></td>
-			</tr>
-			<tr>
-				<td align="right" valign="top" class="p-r-5">District :</td>
-				<td><textarea class="p-l-5" rows="1" cols="60" type="text" name="dist" placeholder="Example: Mae Sai" required><?php echo $olddist;?></textarea></td>
-			</tr>
-			<tr>
-				<td align="right" valign="top" class="p-r-5">Sub-District :</td>
-				<td><textarea class="p-l-5" rows="1" cols="60" type="text" name="sdist" placeholder="Example: Huai Khrai" required><?php echo $oldsubdist;?></textarea></td>
-			</tr>
-			<tr>
-				<td align="right" valign="top" class="p-r-5">Zip Code :</td>
-				<td><textarea class="p-l-5" rows="1" cols="60" type="text" name="zip" placeholder="Example: 57000" required><?php echo $oldzip;?></textarea></td>
-			</tr>
-			<tr>
-				<td align="right" valign="top" class="p-r-5">Tel. (For Shipping) :</td>
-				<td><textarea class="p-l-5" rows="1" cols="60" type="text" name="teladdr" placeholder="Example: 0801234567" required><?php echo $oldteladdr;?></textarea></td>
-			</tr><td height="10"/></tr>	
-		</table>
+		
+		<div class="p-b-10">
+			<h2>Default Payment</h2>
+		</div>
+		
+		<div class="graycontainer">
 		<table>
 			<tr>
-				<td width="70%" style="max-width:300px" align="center"><button class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4" type="submit" name="submitaddr">Submit</button></td>
-				<!------------------------------------  WAITING FOR LINK ^^^^ ----------------------->
-			</tr>
-			</form>
-		</table>
-		<br/><br/>
-		<h2>Payment Method</h2>
-		<br/>
-		<table>
-			<form id="form3" method="post" action="">
-			<tr>
-				<td align="right" valign="top" class="p-r-5">Holder name: </td>
-				<td><textarea class="p-l-5" rows="1" cols="40" type="text" name="holder" placeholder="Full Name" required><?php echo $resultpay['holder_name'];?></textarea></td>
+				<td align="right" class="p-r-5">Holder name : </td>
+				<td><?php if($resultpay!=null)echo $resultpay['holder_name'];else echo "No Information";?></td>
 			</tr>
 			<tr>
-				<td align="right" valign="top" class="p-r-5">Card Number: </td>
+				<td align="right" class="p-r-5">Card Number : </td>
 				<td>
-					<textarea class="p-l-5" rows="1" cols="5" type="text" name="cdnum1" placeholder="xxxx" required><?php echo substr($resultpay['cardnumber'],0,4);?></textarea>
-					<textarea class="p-l-5" rows="1" cols="5" type="text" name="cdnum2" placeholder="xxxx" required><?php echo substr($resultpay['cardnumber'],4,4);?></textarea>
-					<textarea class="p-l-5" rows="1" cols="5" type="text" name="cdnum3" placeholder="xxxx" required><?php echo substr($resultpay['cardnumber'],8,4);?></textarea>
-					<textarea class="p-l-5" rows="1" cols="5" type="text" name="cdnum4" placeholder="xxxx" required><?php echo substr($resultpay['cardnumber'],12,4);?></textarea>
+					<?php if($resultpay!=null)
+							echo substr($resultpay['cardnumber'],0,4)." - ".
+								substr($resultpay['cardnumber'],4,4)." - ".
+								substr($resultpay['cardnumber'],8,4)." - ".
+								substr($resultpay['cardnumber'],12,4);
+						else echo "No Information";?>
 				</td>
 			</tr>
-		</table><br/>
-		<table>
-			<tr>
-				<td width="70%" style="max-width:300px" align="center"><button class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4" type="submit" name="submitpay">Submit</button></td>
-				<!------------------------------------  WAITING FOR LINK ^^^^ ----------------------->
-			</tr>
-			</form>
+			<tr><td height="10"/></tr>	
 		</table>
+		<button onclick='document.getElementById("paybox").style.display="block"' class="flex-c-m bg4 bo-rad-23 hov1 s-text1 trans-0-4" style="width:5%; height:40px; min-width:60px;">
+			Edit
+		</button>
+		
+		</div>
 		<br/><br/>
 		<center><a class="flex-c-m size1ss bg4 bo-rad-23 hov1 s-text1 trans-0-4" href='/mfu/products.php'>Back</a></center>
 		<br/><br/>
@@ -922,6 +1203,24 @@
 
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
+	<script>
+	var mymodal1 = document.getElementById('profilebox');
+	var mymodal2 = document.getElementById('addressbox');
+	var mymodal3 = document.getElementById('paybox');
+
+		// When the user clicks anywhere outside of the modal, close it
+		window.onclick = function(event) {
+			if (event.target == mymodal1) {
+				mymodal1.style.display = "none";
+			}
+			if (event.target == mymodal2) {
+				mymodal2.style.display = "none";
+			}
+			if (event.target == mymodal3) {
+				mymodal3.style.display = "none";
+			}
+		}
+	</script>
 
 </body>
 </html>

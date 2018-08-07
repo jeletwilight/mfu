@@ -1,5 +1,12 @@
 <?php
-	$con = mysqli_connect("localhost", "root", "", "mfu");
+
+	$host = "localhost";
+	$usr = "root";
+	$pw = "";
+	$db = "mfu";
+	$port = "";
+
+	$con = mysqli_connect($host, $usr, $pw, $db);
 	
 	if (mysqli_connect_errno()) {
         die("ERROR: Could not connect." . mysqli_connect_error());
@@ -30,10 +37,20 @@
 	
 	mysqli_query($con,"SET NAMES UTF8");
 	
+	if(!isset($_SESSION['m1'])){
+		$_SESSION['m1']=1;
+	}
+	
+	if(!isset($_SESSION['m2'])){
+		$_SESSION['m2']=1;
+	}
+	
+	$m1 = $_SESSION['m1'];
+	$m2 = $_SESSION['m2'];
 	
 	//---------------STARTER QUERY-----------------//
-	$qry = "SELECT * FROM receipt";
-    $result = mysqli_query($con,$qry);
+	$qry = "SELECT * FROM receipt WHERE ";
+    $result = mysqli_query($con,$qry.$m1." AND ".$m2);
 	//---------------------------------------------//
 	
 	if(isset($_GET['deleteid'])){
@@ -48,7 +65,7 @@
 		$updateqry = "UPDATE receipt SET status='1' WHERE id='".$_POST['staid']."'";
 		if(mysqli_query($con,$updateqry)){
 			echo "<script>alert('".$_POST['staid']." Delivered')</script>";
-			echo "<script>window.history.back();</script>";
+			echo "<script>window.location.href='/mfu/customerorder.php';</script>";
 		}
 	}
 	
@@ -56,19 +73,58 @@
 		$updateqry = "UPDATE receipt SET status='0' WHERE id='".$_POST['staid']."'";
 		if(mysqli_query($con,$updateqry)){
 			echo "<script>alert('".$_POST['staid']." Nothing')</script>";
-			echo "<script>window.history.back();</script>";
+			echo "<script>window.location.href='/mfu/customerorder.php';</script>";
 		}
 	}
 	
-	if(isset($_POST['sortnothing'])){
-		$qry = "SELECT * FROM receipt WHERE status='0'";
-		$result = mysqli_query($con,$qry);	
+	if(isset($_POST['sortdelivered'])){
+		$_SESSION['m1'] = 'status=1';
+		$m1 = $_SESSION['m1'];
+		$m2 = $_SESSION['m2'];
+		$qry = "SELECT * FROM receipt WHERE ";
+		$result = mysqli_query($con,$qry.$m1." AND ".$m2);
 	}
 	
-	if(isset($_POST['sortall'])){
-		$qry = "SELECT * FROM receipt";
-		$result = mysqli_query($con,$qry);
+	if(isset($_POST['sortnothing'])){
+		$_SESSION['m1'] = 'status=0';
+		$m1 = $_SESSION['m1'];
+		$m2 = $_SESSION['m2'];
+		$qry = "SELECT * FROM receipt WHERE ";
+		$result = mysqli_query($con,$qry.$m1." AND ".$m2);
 	}
+	
+	if(isset($_POST['ssortall'])){
+		$_SESSION['m1'] = '1';
+		$m1 = $_SESSION['m1'];
+		$m2 = $_SESSION['m2'];
+		$qry = "SELECT * FROM receipt WHERE ";
+		$result = mysqli_query($con,$qry.$m1." AND ".$m2);
+	}
+	
+	if(isset($_POST['sortcredit'])){
+		$_SESSION['m2'] = 'method=0';
+		$m1 = $_SESSION['m1'];
+		$m2 = $_SESSION['m2'];
+		$qry = "SELECT * FROM receipt WHERE ";
+		$result = mysqli_query($con,$qry.$m1." AND ".$m2);
+	}
+	
+	if(isset($_POST['sortprompay'])){
+		$_SESSION['m2'] = 'method!=0';
+		$m1 = $_SESSION['m1'];
+		$m2 = $_SESSION['m2'];
+		$qry = "SELECT * FROM receipt WHERE ";
+		$result = mysqli_query($con,$qry.$m1." AND ".$m2);
+	}
+	
+	if(isset($_POST['msortall'])){
+		$_SESSION['m2'] = '1';
+		$m1 = $_SESSION['m1'];
+		$m2 = $_SESSION['m2'];
+		$qry = "SELECT * FROM receipt WHERE ";
+		$result = mysqli_query($con,$qry.$m1." AND ".$m2);
+	}
+	
 	
 	if(isset($_GET['search-receipt'])){
 		if($_GET['searchkey']){
@@ -124,11 +180,12 @@
 		<div class="container-menu-header">
 			<div class="topbar">
 				<div class="topbar-social">
-					<a href="#" class="topbar-social-item fa fa-facebook"></a>
+					<a href="/mfu/home.php" class="topbar-social-item">9elan Co.,Ltd.</a>
+					<!--<a href="#" class="topbar-social-item fa fa-facebook"></a>
 					<a href="#" class="topbar-social-item fa fa-instagram"></a>
 					<a href="#" class="topbar-social-item fa fa-pinterest-p"></a>
 					<a href="#" class="topbar-social-item fa fa-snapchat-ghost"></a>
-					<a href="#" class="topbar-social-item fa fa-youtube-play"></a>
+					<a href="#" class="topbar-social-item fa fa-youtube-play"></a>-->
 				</div>
 
 				<span class="topbar-child1">
@@ -137,14 +194,14 @@
 
 				<div class="topbar-child2">
 					<span class="topbar-email">
-						fashe@example.com
+						9elan.company@gmail.com
 					</span>
 				</div>
 			</div>
 
 			<div class="wrap_header">
 				<!-- Logo -->
-				<a href="home.php" class="logo">
+				<a href="#" class="logo">
 					<img src="/mfu/myimages/mylogo.png">
 				</a>
 
@@ -166,15 +223,15 @@
 							</li>-->
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.html">News</a>
 							</li>
 
 							<li>
-								<a href="about.html">About</a>
+								<a href="about.html">About us</a>
 							</li>
 
 							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
 					</nav>
@@ -225,11 +282,21 @@
 										</center>
 									</div>
 								</li>
+								
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/customerorder.php" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												ORDER HISTORY
+											</a>
+										</center>
+									</div>
+								</li>
 
 								<li class="header-cart-item">
 									<div class="header-cart-item-mytxt">
 										<center>
-											<a href="/mfu/products.php" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+											<a href="/mfu/editaccount.php" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
 												EDIT ACCOUNT
 											</a>
 										</center>
@@ -294,7 +361,7 @@
 											</div>
 
 											<div class="header-cart-item-txt">
-												<a href="#" class="header-cart-item-name">
+												<a href="/mfu/productdetail.php?id=<?php echo $values["item_id"];?>" class="header-cart-item-name">
 													<?php echo $values["item_name"];?>
 												</a>
 
@@ -321,7 +388,7 @@
 
 									<div class="header-cart-wrapbtn">
 										<!-- Button -->
-										<a href="/mfu/mycart.php" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+										<a href="/mfu/payment.php" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
 											Check Out
 										</a>
 									</div>
@@ -338,170 +405,263 @@
 			</div>
 		</div>
 
-		<!-- Header Mobile -->
-		<div class="wrap_header_mobile">
-			<!-- Logo moblie -->
-			<a href="home.php" class="logo-mobile">
-				<img src="/mfu/myimages/mylogo.png">
-			</a>
+		<div>
+			<!-- Header Mobile -->
+			<div class="wrap_header_mobile">
+				<!-- Logo moblie -->
+				<a href="#" class="logo-mobile">
+					<img src="/mfu/myimages/mylogo.png">
+				</a>
 
-			<!-- Button show menu -->
-			<div class="btn-show-menu">
-				<!-- Header Icon mobile -->
-				<div class="header-icons-mobile">
-					<a href="#" class="header-wrapicon1 dis-block">
-						<img src="images/icons/icon-header-01.png" class="header-icon1" alt="ICON">
-					</a>
-
-					<span class="linedivide2"></span>
-
-					<div class="header-wrapicon2">
-						<img src="images/icons/icon-header-02.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
-						<span class="header-icons-noti">0</span>
-
-						<!-- Header cart noti -->
+				<!-- Button show menu -->
+				<div class="btn-show-menu">
+					<!-- Header Icon mobile -->
+					<div class="header-icons-mobile">
+						<?php 
+						if($_SESSION['login']!='GUEST' && $_SESSION['c']>6):
+					?>
+					<div class="header-wrapicon1">
+						<img src="images/icons/icon-header-01.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
 						<div class="header-cart header-dropdown">
 							<ul class="header-cart-wrapitem">
 								<li class="header-cart-item">
-									<div class="header-cart-item-img">
-										<img src="images/item-cart-01.jpg" alt="IMG">
-									</div>
-
-									<div class="header-cart-item-txt">
-										<a href="#" class="header-cart-item-name">
-											White Shirt With Pleat Detail Back
-										</a>
-
-										<span class="header-cart-item-info">
-											1 x $19.00
-										</span>
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<b class="m-text14">MY ACCOUNT</b>
+										</center>
 									</div>
 								</li>
-
+								
 								<li class="header-cart-item">
-									<div class="header-cart-item-img">
-										<img src="images/item-cart-02.jpg" alt="IMG">
-									</div>
-
-									<div class="header-cart-item-txt">
-										<a href="#" class="header-cart-item-name">
-											Converse All Star Hi Black Canvas
-										</a>
-
-										<span class="header-cart-item-info">
-											1 x $39.00
-										</span>
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<a>Account : <?php echo $_SESSION['login'];?></a>
+										</center>
 									</div>
 								</li>
-
+								
 								<li class="header-cart-item">
-									<div class="header-cart-item-img">
-										<img src="images/item-cart-03.jpg" alt="IMG">
-									</div>
-
-									<div class="header-cart-item-txt">
-										<a href="#" class="header-cart-item-name">
-											Nixon Porter Leather Watch In Tan
-										</a>
-
-										<span class="header-cart-item-info">
-											1 x $17.00
-										</span>
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/products.php?action=logout" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												LOG OUT
+											</a>
+										</center>
 									</div>
 								</li>
 							</ul>
-
-							<div class="header-cart-total">
-								Total: $75.00
-							</div>
-
-							<div class="header-cart-buttons">
-								<div class="header-cart-wrapbtn">
-									<!-- Button -->
-									<a href="cart.html" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
-										View Cart
-									</a>
-								</div>
-
-								<div class="header-cart-wrapbtn">
-									<!-- Button -->
-									<a href="#" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
-										Check Out
-									</a>
-								</div>
-							</div>
 						</div>
 					</div>
-				</div>
+					<?php 
+						elseif($_SESSION['login']!='GUEST' && $_SESSION['c']!='0'):	
+					?>
+					<div class="header-wrapicon1">
+						<img src="images/icons/icon-header-01.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
+						<div class="header-cart header-dropdown">
+							<ul class="header-cart-wrapitem">
 
-				<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
-					<span class="hamburger-box">
-						<span class="hamburger-inner"></span>
-					</span>
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<b class="m-text14">MY ACCOUNT</b>
+										</center>
+									</div>
+								</li>
+								
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">	
+										<center>
+											<a>Account : <?php echo $_SESSION['login'];?></a>
+										</center>
+									</div>
+								</li>
+								
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/customerorder.php" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												ORDER HISTORY
+											</a>
+										</center>
+									</div>
+								</li>
+
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/editaccount.php" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												EDIT ACCOUNT
+											</a>
+										</center>
+									</div>
+								</li>
+
+								<li class="header-cart-item">
+									<div class="header-cart-item-mytxt">
+										<center>
+											<a href="/mfu/products.php?action=logout" class="flex-c-m size1s bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												LOG OUT
+											</a>
+										</center>
+									</div>
+								</li>
+								
+							</ul>
+						</div>
+					</div>
+					<?php
+						else:
+					?>
+					<a class="header-wrapicon1 dis-block">
+						<img src="images/icons/icon-header-01.png" class="header-icon1" alt="ICON" onclick='document.getElementById("loginbox").style.display="block"'>
+					</a>
+					<?php endif;?>
+
+						<?php
+							if(in_array($_SESSION['c'],$addproducttocart)):
+						?>
+						
+						<span class="linedivide2"></span>
+
+						<div class="header-wrapicon2">
+							<img src="images/icons/icon-header-02.png" class="header-icon1 js-show-header-dropdown" alt="ICON">
+							<span class="header-icons-noti"><?php 
+																	if(isset($_SESSION['shopping_cart']))echo count($_SESSION['shopping_cart']);
+																	else echo "0";
+															?>
+							</span>
+
+							<!-- Header cart noti -->
+							<div class="header-cart header-dropdown">
+										<li class="header-cart-wrapitem header-cart-item">
+											<div class="header-cart-item-mytxt">	
+												<center>
+													<b class="m-text14">MY CART</b>
+												</center>
+											</div>
+										</li>
+								<?php if(!empty($_SESSION["shopping_cart"])):?>
+									<ul class="header-cart-wrapitem">
+										<?php 	$total = 0;
+												foreach($_SESSION['shopping_cart'] as $key => $values):
+										?>
+											<li class="header-cart-item">
+												<div class="header-cart-item-img" onclick="location.href='/mfu/products.php?action=delete&id=<?php echo $values["item_id"];?>';">
+													<img src="/mfu/productimages/<?php echo $values['item_img'];?>">
+												</div>
+
+												<div class="header-cart-item-txt">
+													<a href="/mfu/productdetail.php?id=<?php echo $values['item_id'];?>" class="header-cart-item-name">
+														<?php echo $values["item_name"];?>
+													</a>
+
+													<span class="header-cart-item-info">
+														<?php echo $values["item_quantity"];?> x ฿ <?php echo number_format($values["item_price"]);?> 
+														= ฿ <?php echo number_format($values["item_quantity"] * $values["item_price"]);?>
+													</span>
+												</div>
+											</li>
+										<?php 	$total = $total + ($values["item_quantity"] * $values["item_price"]);
+												endforeach;
+										?>
+									</ul>
+									<div class="header-cart-total">
+										Total: ฿ <?php echo number_format($total);?>
+									</div>
+									<div class="header-cart-buttons">
+										<div class="header-cart-wrapbtn">
+											<!-- Button -->
+											<a href="/mfu/products.php?action=deleteall" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												Clear Cart
+											</a>
+										</div>
+
+										<div class="header-cart-wrapbtn">
+											<!-- Button -->
+											<a href="/mfu/payment.php" class="flex-c-m size1 bg1 bo-rad-20 hov1 s-text1 trans-0-4">
+												Check Out
+											</a>
+										</div>
+									</div>
+								<?php else:?>
+									<a class="header-cart-item-name">
+										No item
+									</a>
+								<?php endif;?>
+							</div>
+						</div>
+						<?php endif;?>
+					</div>
+
+					<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
+						<span class="hamburger-box">
+							<span class="hamburger-inner"></span>
+						</span>
+					</div>
 				</div>
 			</div>
-		</div>
 
-		<!-- Menu Mobile -->
-		<div class="wrap-side-menu" >
-			<nav class="side-menu">
-				<ul class="main-menu">
-					<li class="item-topbar-mobile p-l-20 p-t-8 p-b-8">
-						<span class="topbar-child1">
-							Free shipping for standard order over $100
-						</span>
-					</li>
-
-					<li class="item-topbar-mobile p-l-20 p-t-8 p-b-8">
-						<div class="topbar-child2-mobile">
-							<span class="topbar-email">
-								fashe@example.com
+			<!-- Menu Mobile -->
+			<div class="wrap-side-menu">
+				<nav class="side-menu">
+					<ul class="main-menu">
+						<li class="item-topbar-mobile p-l-20 p-t-8 p-b-8">
+							<span class="topbar-child1">
+								Free shipping for standard order over $100
 							</span>
-						</div>
-					</li>
+						</li>
 
-					<li class="item-topbar-mobile p-l-10">
-						<div class="topbar-social-mobile">
-							<a href="#" class="topbar-social-item fa fa-facebook"></a>
-							<a href="#" class="topbar-social-item fa fa-instagram"></a>
-							<a href="#" class="topbar-social-item fa fa-pinterest-p"></a>
-							<a href="#" class="topbar-social-item fa fa-snapchat-ghost"></a>
-							<a href="#" class="topbar-social-item fa fa-youtube-play"></a>
-						</div>
-					</li>
-					
-					
-					<li class="item-menu-mobile">
-						<a href="Home.php">Home</a>
-					</li>
-					
-					<li class="item-menu-mobile">
-						<a href="products.php">Shop</a>
-						<ul class="sub-menu">
-							<li><a href="products.php">Adenoscence</a></li>
-							<li><a href="products.php">Shop2</a></li>
-							<li><a href="products.php">Shop3</a></li>
-						</ul>
-						<i class="arrow-main-menu fa fa-angle-right" aria-hidden="true"></i>
-					</li>
+						<li class="item-topbar-mobile p-l-20 p-t-8 p-b-8">
+							<div class="topbar-child2-mobile">
+								<span class="topbar-email">
+									9elan.company@gmail.com
+								</span>
+							</div>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="cart.html">Cart</a>
-					</li>
+						<li class="item-topbar-mobile p-l-10">
+							<div class="topbar-social-mobile">
+								<a href="#" class="topbar-social-item fa fa-facebook"></a>
+								<a href="#" class="topbar-social-item fa fa-instagram"></a>
+								<a href="#" class="topbar-social-item fa fa-pinterest-p"></a>
+								<a href="#" class="topbar-social-item fa fa-snapchat-ghost"></a>
+								<a href="#" class="topbar-social-item fa fa-youtube-play"></a>
+							</div>
+						</li>
+						
+						
+						<li class="item-menu-mobile">
+							<a href="Home.php">Home</a>
+						</li>
+						
+						<li class="item-menu-mobile">
+							<a href="products.php">Shop</a>
+							<ul class="sub-menu">
+								<li><a href="products.php">Adenoscence</a></li>
+								<li><a href="products.php">Shop2</a></li>
+								<li><a href="products.php">Shop3</a></li>
+							</ul>
+							<i class="arrow-main-menu fa fa-angle-right" aria-hidden="true"></i>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="blog.html">Blog</a>
-					</li>
+						<!--<li class="item-menu-mobile">
+							<a href="cart.html">Cart</a>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="about.html">About</a>
-					</li>
+						<li class="item-menu-mobile">
+							<a href="blog.html">Blog</a>
+						</li>
 
-					<li class="item-menu-mobile">
-						<a href="contact.html">Contact</a>
-					</li>
-				</ul>
-			</nav>
+						<li class="item-menu-mobile">
+							<a href="about.html">About</a>
+						</li>
+
+						<li class="item-menu-mobile">
+							<a href="contact.html">Contact</a>
+						</li>-->
+					</ul>
+				</nav>
+			</div>
 		</div>
 	</header>
 
@@ -522,9 +682,20 @@
 		<table width="50%" style="max-width:500px;">
 		<form method="post">
 		<tr>
-			<td><button class="flex-c-m size4s bg7 bo-rad-15 hov1 s-text14 trans-0-4" type="submit" name="sortall">View All</button></td>
+			<td align="right" class="p-r-5">Status :</td>
+			<td><button class="flex-c-m size4s <?php if($_SESSION['m1']=='1')echo "bg7s";else echo "bg7";?> bo-rad-15 violethov s-text14 trans-0-4" type="submit" name="ssortall">All</button></td>
 			<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-			<td><button class="flex-c-m size4s bg7 bo-rad-15 hov1 s-text14 trans-0-4" type="submit" name="sortnothing">Just Nothing</button></td>
+			<td><button class="flex-c-m size4s <?php if($_SESSION['m1']=='status=1')echo "bg7s";else echo "bg7";?> bo-rad-15 greenhov s-text14 trans-0-4" type="submit" name="sortdelivered">Delivered</button></td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td><button class="flex-c-m size4s <?php if($_SESSION['m1']=='status=0')echo "bg7s";else echo "bg7";?> bo-rad-15 redhov s-text14 trans-0-4" type="submit" name="sortnothing">Nothing</button></td>
+		</tr>
+		<tr>
+			<td>Payment :</td>
+			<td><button class="flex-c-m size4s <?php if($_SESSION['m2']=='1')echo "bg7s";else echo "bg7";?> bo-rad-15 violethov s-text14 trans-0-4" type="submit" name="msortall">All</button></td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td><button class="flex-c-m size4s <?php if($_SESSION['m2']=='method=0')echo "bg7s";else echo "bg7";?> bo-rad-15 orangehov s-text14 trans-0-4" type="submit" name="sortcredit">Credit</button></td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td><button class="flex-c-m size4s <?php if($_SESSION['m2']=='method!=0')echo "bg7s";else echo "bg7";?> bo-rad-15 bluehov s-text14 trans-0-4" type="submit" name="sortprompay">Promtpay</button></td>
 		</tr>
 		</form>
 		</table><br/>
@@ -551,6 +722,9 @@
 				<th style="text-align:center;">NAME</th>
 			<?php endif;?>
 			<th style="text-align:center;">ADDRESS</th>
+			<?php if($_SESSION['c']<8):?>
+			<th style="text-align:center;">PAYMENT</th>
+			<?php endif;?>
 			<th style="text-align:center;" width="10%">PRICE</th>
 			<th style="text-align:center;" width="10%">DETAIL</th>
 			<?php if($_SESSION['c']>=8):?>
@@ -568,6 +742,7 @@
 					$pid = $row['payment_id'];
 					$total = $row['subtotal'];
 					$status = $row['status'];
+					$method = $row['method'];
 			?>
 				<?php $userinfo = mysqli_query($con,"SELECT * FROM login WHERE id='".$uid."'"); $resultusr = mysqli_fetch_array($userinfo);?>
 				<tr>
@@ -583,7 +758,7 @@
 									" // Tel:".$resultaddress['telephone'];
 						;?>
 					</td>
-					<td align="center"><?php echo number_format($total)." ฿";?></td>
+					<td align="center" bgcolor="<?php if($method==0)echo '#ffb075';else echo '#75c3ff';?>"><?php echo number_format($total)." ฿";?></td>
 					<td align="center" valign="center">
 						<button class="bg7 bo-rad-10 hov1 s-text14 trans-0-4" style="width:80%; height:55px;" onclick="hiddenlist('<?php echo $iden;?>')">CLICK</button>
 					</td>
@@ -593,7 +768,9 @@
 							<input type="hidden" name="staid" value="<?php echo $iden;?>">
 							<tr>
 								<td width="100%">
-									<button class="bg7 bo-rad-10 greenhov s-text14 trans-0-4" type="submit" name="Delivered" value="Delivered" style="width:100%">Delivered</button>
+									<div style="width:90px">
+										<button class="bg7 bo-rad-10 greenhov s-text14 trans-0-4" type="submit" name="Delivered" value="Delivered" style="width:100%">Delivered</button>
+									</div>
 								</td>
 							</tr>
 							<tr>
@@ -614,7 +791,7 @@
 					<div class="newcontainer mymodal-content myanimate">
 						<p align="right" style="position:relative">
 							<span onclick="document.getElementById('hiddenitem<?php echo $iden;?>').style.display='none'" class="myclose trans-0-4" title="Close">&times;</span>
-						</p>
+						</p><br/>
 						<center><font size="11"><b>Receipt Detail</b></font><br/></center>
 						<div class="p-l-15">
 							<p align="left">Receipt ID : <?php echo $iden;?> (<?php if($status==0)echo "Nothing";else echo "Delivered";?>)</p>
@@ -645,6 +822,7 @@
 								<br/>
 							</table>
 							<div class="p-r-70"><p align="right">All Total : <?php echo number_format($total);?> ฿</p></div>
+							<div class="p-l-20">Pay By : <?php if($method==0)echo "Credit Card";else echo "Prompt Pay";?></div>
 							<br/>
 							
 							<button onclick="document.getElementById('hiddenitem<?php echo $iden;?>').style.display='none'" 
@@ -668,6 +846,7 @@
 					$aid = $row['address_id'];
 					$pid = $row['payment_id'];
 					$total = $row['subtotal'];
+					$method = $row['method'];
 			?>
 			<?php $userinfo = mysqli_query($con,"SELECT * FROM login WHERE id='".$uid."'"); $resultusr = mysqli_fetch_array($userinfo);?>
 				<tr>
@@ -682,6 +861,7 @@
 									" // Tel:".$resultaddress['telephone'];
 						;?>
 					</td>
+					<td align="center"><?php if($method==0)echo "Credit Card";else echo "Prompt Pay";?></td>
 					<td align="center"><?php echo number_format($total)." ฿";?></td>
 					<td align="center" valign="center">
 						<div class="p-t-10 p-b-10">
@@ -689,7 +869,7 @@
 						</div>
 					</td>
 				</tr>
-				<tr><td colspan="4">
+				<tr><td colspan="5">
 					<div id="hiddenitem<?php echo $iden;?>" class="mymodal" style="display:none">
 					<div class="newcontainer mymodal-content myanimate">
 						<p align="right" style="position:relative">

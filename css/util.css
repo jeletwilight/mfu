@@ -3644,6 +3644,10 @@ SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE
 /*[ Width Size ]
 ///////////////////////////////////////////////////////////
 */
+.w-sizecredit {
+	width: 50px;
+}
+
 .w-size1 {
 	width: 161px;
 }
@@ -3802,6 +3806,7 @@ SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE
 .bg5 {background-color: #f2f2f2;}
 .bg6 {background-color: #f0f0f0;}
 .bg7 {background-color: #333333;}
+.bg7s {background-color: #777777;}
 .bg8 {background-color: #e6e6e6;}
 
 .bg-img1 {
@@ -3809,6 +3814,8 @@ SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE SHAPE
 	background-position: center 0;
 	background-size: cover;
 }
+
+.bgred {background-color: #cc0000;}
 
 
 /*[  ]
@@ -4106,6 +4113,30 @@ EFFECT   EFFECT   EFFECT   EFFECT   EFFECT   EFFECT  EFFECT
   	color: white;
 }
 
+.bluehov:hover {
+	background-color: #75c3ff;
+  	color: white;
+}
+
+.orangehov:hover {
+	background-color: #ffb075;
+  	color: white;
+}
+
+.violethov:hover {
+	background-color: #7400c6;
+  	color: white;
+}
+
+.hovchar {
+	cursor: pointer;
+	text-decoration: underline;
+}
+
+.hovchar:hover {
+	color: #ffb075;
+	text-decoration: underline;
+}
 
 /*[ Active ]
 ///////////////////////////////////////////////////////////
